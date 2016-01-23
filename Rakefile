@@ -137,7 +137,7 @@ task :publish do
   if $stdin.gets() =~ /[yY]/
     run "gem push #{gem}"
     run "git push -u origin `git rev-parse --abbrev-ref HEAD`"
-    run "git push -f origin ruby-release"
+    run "git push -f origin HEAD:ruby-release"
     run "git tag ruby-#{ver}"
     run "git push --tags"
   end
