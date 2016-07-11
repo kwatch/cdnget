@@ -37,6 +37,12 @@ Usage
     jquery.js	jquery.min.js	jquery.min.map
 
 
+Todo
+----
+
+* [_] change to call api.cdnjs.com
+
+
 Copyright and License
 ---------------------
 
