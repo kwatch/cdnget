@@ -2,7 +2,7 @@
 
 ###
 
-RELEASE   = '$Release: 0.0.0 $'.split()[1]
+RELEASE   = '$Release: 0.2.0 $'.split()[1]
 COPYRIGHT = 'copyright(c) 2016 kuwata-lab.com all rights reserved'
 LICENSE   = 'MIT License'
 
