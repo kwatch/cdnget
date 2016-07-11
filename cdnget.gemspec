@@ -12,7 +12,7 @@ Gem::Specification.new do |o|
   o.license       = "MIT"
 
   o.files         = Dir[*%w[
-                      README.md MIT-LICENSE Rakefile cdnget.gemspec
+                      README.md CHANGES.md MIT-LICENSE Rakefile cdnget.gemspec
                       lib/**/*.rb
                       bin/cdnget
                       test/**/*_test.rb
