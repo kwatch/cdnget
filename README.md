@@ -13,7 +13,7 @@ Install
 
 Or:
 
-    $ curl -sLO https://github.com/kwatch/cdnget/raw/ruby-release/bin/cdnget
+    $ curl -sLo cdnget bit.ly/cdnget_rb
     $ chmod a+x cdnget
     $ sudo cp cdnget /usr/local/bin
 
