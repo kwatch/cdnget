@@ -163,14 +163,13 @@ module CDNGet
     def get(library, version)
       validate(library, version)
       html = fetch("https://cdnjs.com/libraries/#{library}/#{version}", library)
-      baseurl = "https://cdnjs.cloudflare.com/ajax/libs/#{library}/#{version}"
-      urls  = []
+      baseurl = "https://cdnjs.cloudflare.com/ajax/libs/#{library}/#{version}/"
+      basepat = Regexp.escape("#{library}/#{version}")
       files = []
-      rexp = %r`>(#{Regexp.escape(baseurl)}/([^<]+))<\/p>`
-      html.scan(%r`>(#{Regexp.escape(baseurl)}/([^<]+))<\/p>`) do |url, file|
-        urls  << url .gsub(/&#x2F;/, '/')
+      html.scan(%r`>#{basepat}/([^<]+)<\/p>`) do |file,|
         files << file.gsub(/&#x2F;/, '/')
       end
+      urls = files.collect {|s| baseurl + s }
       return {
         name:     library,
         version:  version,
