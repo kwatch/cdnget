@@ -311,14 +311,19 @@ END
 
     it "(cdnjs) lists files containing subdirectory." do
       expected = <<END
-name:     jqueryui
-version:  1.9.2
+name:     jquery-jcrop
+version:  0.9.12
 urls:
-  - https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/i18n/jquery-ui-i18n.js
-  - https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/i18n/jquery-ui-i18n.min.js
-  - https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/css/Jcrop.gif
+  - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/css/jquery.Jcrop.css
+  - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/css/jquery.Jcrop.min.css
+  - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/js/jquery.Jcrop.js
+  - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/js/jquery.Jcrop.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/js/jquery.color.js
+  - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/js/jquery.color.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/js/jquery.min.js
 END
-      actual = CDNGet::Main.new().run("cdnjs", "jqueryui", "1.9.2")
+      actual = CDNGet::Main.new().run("cdnjs", "jquery-jcrop", "0.9.12")
       ok {actual} == expected
     end
 
@@ -373,42 +378,79 @@ END
       tmpdir = "tmpdir1"
       Dir.mkdir(tmpdir)
       expected = <<END
-#{tmpdir}/jqueryui/1.9.2/i18n/jquery-ui-i18n.js ... Done (70,146 byte)
-#{tmpdir}/jqueryui/1.9.2/i18n/jquery-ui-i18n.min.js ... Done (54,926 byte)
-#{tmpdir}/jqueryui/1.9.2/jquery-ui.min.js ... Done (237,802 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/css/Jcrop.gif ... Done (329 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/css/jquery.Jcrop.css ... Done (3,280 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/css/jquery.Jcrop.min.css ... Done (2,102 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.Jcrop.js ... Done (42,434 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.Jcrop.min.js ... Done (15,892 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.color.js ... Done (16,142 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.color.min.js ... Done (6,845 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.min.js ... Done (93,068 byte)
 END
       begin
         sout, serr = capture_io() do
-          actual = CDNGet::Main.new().run("cdnjs", "jqueryui", "1.9.2", tmpdir)
+          actual = CDNGet::Main.new().run("cdnjs", "jquery-jcrop", "0.9.12", tmpdir)
         end
-        ok {"#{tmpdir}/jqueryui/1.9.2/i18n/jquery-ui-i18n.js"    }.file_exist?
-        ok {"#{tmpdir}/jqueryui/1.9.2/i18n/jquery-ui-i18n.min.js"}.file_exist?
-        ok {"#{tmpdir}/jqueryui/1.9.2/jquery-ui.min.js"          }.file_exist?
+        ok {"#{tmpdir}/jquery-jcrop/0.9.12/css/Jcrop.gif"             }.file_exist?
+        ok {"#{tmpdir}/jquery-jcrop/0.9.12/css/jquery.Jcrop.css"      }.file_exist?
+        ok {"#{tmpdir}/jquery-jcrop/0.9.12/css/jquery.Jcrop.min.css"  }.file_exist?
+        ok {"#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.Jcrop.js"        }.file_exist?
+        ok {"#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.Jcrop.min.js"    }.file_exist?
+        ok {"#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.color.js"        }.file_exist?
+        ok {"#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.color.min.js"    }.file_exist?
+        ok {"#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.min.js"          }.file_exist?
         ok {sout} == expected
       ensure
         FileUtils.rm_r(tmpdir)
       end
     end
 
-    def _do_download_test3(cdn_code)
+    def _do_download_test3(cdn_code, libname)
       tmpdir = "tmpdir1"
       Dir.mkdir(tmpdir)
-      expected = <<END
-#{tmpdir}/jqueryui/1.9.2/i18n/jquery-ui-i18n.js ... Done (70,146 byte)
-#{tmpdir}/jqueryui/1.9.2/i18n/jquery-ui-i18n.min.js ... Done (54,926 byte)
-#{tmpdir}/jqueryui/1.9.2/jquery-ui.min.js ... Done (237,802 byte)
+      case libname
+      when "jquery"
+        if cdn_code == "google"
+          version = "2.2.4"
+          expected = <<END
+#{tmpdir}/jquery/2.2.4/jquery.min.js ... Done (85,578 byte)
 END
+        else
+          version = "3.1.0"
+          expected = <<END
+#{tmpdir}/jquery/3.1.0/core.js ... Done (11,329 byte)
+#{tmpdir}/jquery/3.1.0/jquery.js ... Done (263,767 byte)
+#{tmpdir}/jquery/3.1.0/jquery.min.js ... Done (86,351 byte)
+#{tmpdir}/jquery/3.1.0/jquery.min.map ... Done (131,041 byte)
+#{tmpdir}/jquery/3.1.0/jquery.slim.js ... Done (210,659 byte)
+#{tmpdir}/jquery/3.1.0/jquery.slim.min.js ... Done (68,952 byte)
+#{tmpdir}/jquery/3.1.0/jquery.slim.min.map ... Done (103,382 byte)
+END
+        end
+      when "jquery-jcrop"
+        version = "0.9.12"
+        expected = <<END
+#{tmpdir}/jquery-jcrop/0.9.12/css/Jcrop.gif ... Done (329 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/css/jquery.Jcrop.css ... Done (3,280 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/css/jquery.Jcrop.min.css ... Done (2,102 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.Jcrop.js ... Done (42,434 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.Jcrop.min.js ... Done (15,892 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.color.js ... Done (16,142 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.color.min.js ... Done (6,845 byte)
+#{tmpdir}/jquery-jcrop/0.9.12/js/jquery.min.js ... Done (93,068 byte)
+END
+      end
       begin
-        path = "#{tmpdir}/jqueryui/1.9.2"
+        path = "#{tmpdir}/#{libname}/#{version}"
         # 1st
         sout, serr = capture_io() do
-          actual = CDNGet::Main.new().run("cdnjs", "jqueryui", "1.9.2", tmpdir)
+          actual = CDNGet::Main.new().run(cdn_code, libname, version, tmpdir)
         end
         ok {serr} == ""
         ok {sout} == expected
         # 2nd
         sout, serr = capture_io() do
-          actual = CDNGet::Main.new().run("cdnjs", "jqueryui", "1.9.2", tmpdir)
+          actual = CDNGet::Main.new().run(cdn_code, libname, version, tmpdir)
         end
         ok {serr} == ""
         ok {sout} == expected.gsub(/\n/, " (Unchanged)\n")
@@ -416,7 +458,6 @@ END
         FileUtils.rm_r(tmpdir)
       end
     end
-
 
     it "(cdnjs) downloads files into dir." do
       _do_download_test1("cdnjs")
@@ -443,15 +484,15 @@ END
     end
 
     it "(cdnjs) doesn't override existing files when they are identical to downloaded files." do
-      _do_download_test3("cdnjs")
+      _do_download_test3("cdnjs", "jquery-jcrop")
     end
 
     it "(google) doesn't override existing files when they are identical to downloaded files." do
-      _do_download_test3("google")
+      _do_download_test3("google", "jquery")
     end
 
     it "(jsdelivr) doesn't override existing files when they are identical to downloaded files." do
-      _do_download_test3("jsdelivr")
+      _do_download_test3("jsdelivr", "jquery")
     end
 
   end
