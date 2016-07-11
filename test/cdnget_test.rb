@@ -410,21 +410,16 @@ END
       Dir.mkdir(tmpdir)
       case libname
       when "jquery"
+        version = "2.2.4"
         if cdn_code == "google"
-          version = "2.2.4"
           expected = <<END
 #{tmpdir}/jquery/2.2.4/jquery.min.js ... Done (85,578 byte)
 END
         else
-          version = "3.1.0"
           expected = <<END
-#{tmpdir}/jquery/3.1.0/core.js ... Done (11,329 byte)
-#{tmpdir}/jquery/3.1.0/jquery.js ... Done (263,767 byte)
-#{tmpdir}/jquery/3.1.0/jquery.min.js ... Done (86,351 byte)
-#{tmpdir}/jquery/3.1.0/jquery.min.map ... Done (131,041 byte)
-#{tmpdir}/jquery/3.1.0/jquery.slim.js ... Done (210,659 byte)
-#{tmpdir}/jquery/3.1.0/jquery.slim.min.js ... Done (68,952 byte)
-#{tmpdir}/jquery/3.1.0/jquery.slim.min.map ... Done (103,382 byte)
+#{tmpdir}/jquery/2.2.4/jquery.js ... Done (257,551 byte)
+#{tmpdir}/jquery/2.2.4/jquery.min.js ... Done (85,578 byte)
+#{tmpdir}/jquery/2.2.4/jquery.min.map ... Done (129,572 byte)
 END
         end
       when "jquery-jcrop"
