@@ -130,13 +130,9 @@ module CDNGet
 
     def list
       libs = []
-      html = fetch("https://cdnjs.com/libraries")
-      html.scan(/<td\b(.*?)<\/td>/m) do |str,|
-        name = desc = nil
-        name = $1 if str =~ /href="\/libraries\/([-.\w]+)">\s*\1\s*<\/a>/
-        desc = $1.strip if str =~ /<div style="display: none;">(.*?)<\/div>/m
-        libs << {name: name, desc: desc} if name
-      end
+      jstr = fetch("https://api.cdnjs.com/libraries?fields=name,description")
+      jdata = JSON.parse(jstr)
+      libs = jdata['results'].collect {|d| {name: d['name'], desc: d['description']} }
       return libs.sort_by {|d| d[:name] }.uniq
     end
 
