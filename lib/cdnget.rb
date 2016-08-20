@@ -114,14 +114,20 @@ module CDNGet
 
     def fetch(url, library=nil)
       begin
-        html = open(url, 'rb') {|f| f.read() }
+        json_str = open(url, 'rb') {|f| f.read() }
         if library
-          html =~ /<h1\b.*?>(.*?)<\/h1>/  or
-            raise CommandError.new("#{library}: Library not found.")
-          library == $1.strip()  or
-            raise CommandError.new("#{library}: Library not found (maybe '#{$1.strip()}'?).")
+          if json_str == "{}"
+            if library.end_with?('js')
+              maybe = library.end_with?('.js') \
+                    ? library.sub('.js', 'js') \
+                    : library.sub(/js$/, '.js')
+              raise CommandError.new("#{library}: Library not found (maybe '#{maybe}'?).")
+            else
+              raise CommandError.new("#{library}: Library not found.")
+            end
+          end
         end
-        return html
+        return json_str
       rescue OpenURI::HTTPError => ex
         raise HttpError.new("GET #{url} : #{ex.message}")
       end
@@ -138,7 +144,7 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      jstr = fetch("https://api.cdnjs.com/libraries/#{library}")
+      jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
       jdata = JSON.parse(jstr)
       return {
         name: library,
@@ -150,7 +156,7 @@ module CDNGet
 
     def get(library, version)
       validate(library, version)
-      jstr = fetch("https://api.cdnjs.com/libraries/#{library}")
+      jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
       jdata = JSON.parse(jstr)
       d = jdata['assets'].find {|d| d['version'] == version }  or
         raise CommandError.new("#{library}/#{version}: Library or version not found.")
