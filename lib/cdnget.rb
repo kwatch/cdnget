@@ -150,19 +150,18 @@ module CDNGet
 
     def get(library, version)
       validate(library, version)
-      html = fetch("https://cdnjs.com/libraries/#{library}/#{version}", library)
+      jstr = fetch("https://api.cdnjs.com/libraries/#{library}")
+      jdata = JSON.parse(jstr)
+      d = jdata['assets'].find {|d| d['version'] == version }  or
+        raise CommandError.new("#{library}/#{version}: Library or version not found.")
       baseurl = "https://cdnjs.cloudflare.com/ajax/libs/#{library}/#{version}/"
-      basepat = Regexp.escape("#{library}/#{version}")
-      files = []
-      html.scan(%r`>#{basepat}/([^<]+)<\/p>`) do |file,|
-        files << file.gsub(/&#x2F;/, '/')
-      end
-      urls = files.collect {|s| baseurl + s }
       return {
         name:     library,
+        desc:     jdata['description'],
+        tags:     (jdata['keywords'] || []).join(", "),
         version:  version,
-        urls:     urls,
-        files:    files,
+        urls:     d['files'].collect {|s| baseurl + s },
+        files:    d['files'],
         baseurl:  baseurl,
       }
     end
