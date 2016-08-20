@@ -138,23 +138,13 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      html = fetch("https://cdnjs.com/libraries/#{library}", library)
-      flagment = html.split(/<select class=".*?version-selector.*?"/, 2).last
-      flagment = flagment.split(/<\/select>/, 2).first
-      versions = []
-      flagment.scan(/<option value="([^"]+)" *(?:selected)?>/) do |ver,|
-        versions << ver
-      end
-      desc = tags = nil
-      if html =~ /<\/p>\s*<p>(.*?)<\/p>\s*<em>(.*?)<\/em>/
-        desc = $1
-        tags = $2
-      end
+      jstr = fetch("https://api.cdnjs.com/libraries/#{library}")
+      jdata = JSON.parse(jstr)
       return {
         name: library,
-        desc: desc,
-        tags: tags,
-        versions: versions,
+        desc: jdata['description'],
+        tags: (jdata['keywords'] || []).join(", "),
+        versions: jdata['assets'].collect {|d| d['version'] },
       }
     end
 
