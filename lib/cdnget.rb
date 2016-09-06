@@ -494,6 +494,7 @@ END
       else
         s << "name:     #{d[:name]}\n"
         s << "version:  #{d[:version]}\n"
+        s << "desc:     #{d[:desc]}\n" if d[:desc]
         s << "tags:     #{d[:tags]}\n" if d[:tags]
         s << "site:     #{d[:site]}\n" if d[:site]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
