@@ -2,6 +2,12 @@ Changes
 =======
 
 
+Release 0.3.0 (2016-09-07)
+---------------------------
+
+* Change to read data from https://api.cdnjs.com/ .
+
+
 Release 0.2.0 (2016-07-11)
 --------------------------
 
