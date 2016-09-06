@@ -114,14 +114,20 @@ module CDNGet
 
     def fetch(url, library=nil)
       begin
-        html = open(url, 'rb') {|f| f.read() }
+        json_str = open(url, 'rb') {|f| f.read() }
         if library
-          html =~ /<h1\b.*?>(.*?)<\/h1>/  or
-            raise CommandError.new("#{library}: Library not found.")
-          library == $1.strip()  or
-            raise CommandError.new("#{library}: Library not found (maybe '#{$1.strip()}'?).")
+          if json_str == "{}"
+            if library.end_with?('js')
+              maybe = library.end_with?('.js') \
+                    ? library.sub('.js', 'js') \
+                    : library.sub(/js$/, '.js')
+              raise CommandError.new("#{library}: Library not found (maybe '#{maybe}'?).")
+            else
+              raise CommandError.new("#{library}: Library not found.")
+            end
+          end
         end
-        return html
+        return json_str
       rescue OpenURI::HTTPError => ex
         raise HttpError.new("GET #{url} : #{ex.message}")
       end
@@ -130,51 +136,38 @@ module CDNGet
 
     def list
       libs = []
-      html = fetch("https://cdnjs.com/libraries")
-      html.scan(/<td\b(.*?)<\/td>/m) do |str,|
-        name = desc = nil
-        name = $1 if str =~ /href="\/libraries\/([-.\w]+)">\s*\1\s*<\/a>/
-        desc = $1.strip if str =~ /<div style="display: none;">(.*?)<\/div>/m
-        libs << {name: name, desc: desc} if name
-      end
+      jstr = fetch("https://api.cdnjs.com/libraries?fields=name,description")
+      jdata = JSON.parse(jstr)
+      libs = jdata['results'].collect {|d| {name: d['name'], desc: d['description']} }
       return libs.sort_by {|d| d[:name] }.uniq
     end
 
     def find(library)
       validate(library, nil)
-      html = fetch("https://cdnjs.com/libraries/#{library}", library)
-      versions = []
-      html.scan(/<option value="([^"]+)" *(?:selected)?>/) do |ver,|
-        versions << ver
-      end
-      desc = tags = nil
-      if html =~ /<p>(.*?)<\/p>\s*<em>(.*?)<\/em>/
-        desc = $1
-        tags = $2
-      end
+      jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
+      jdata = JSON.parse(jstr)
       return {
         name: library,
-        desc: desc,
-        tags: tags,
-        versions: versions,
+        desc: jdata['description'],
+        tags: (jdata['keywords'] || []).join(", "),
+        versions: jdata['assets'].collect {|d| d['version'] },
       }
     end
 
     def get(library, version)
       validate(library, version)
-      html = fetch("https://cdnjs.com/libraries/#{library}/#{version}", library)
+      jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
+      jdata = JSON.parse(jstr)
+      d = jdata['assets'].find {|d| d['version'] == version }  or
+        raise CommandError.new("#{library}/#{version}: Library or version not found.")
       baseurl = "https://cdnjs.cloudflare.com/ajax/libs/#{library}/#{version}/"
-      basepat = Regexp.escape("#{library}/#{version}")
-      files = []
-      html.scan(%r`>#{basepat}/([^<]+)<\/p>`) do |file,|
-        files << file.gsub(/&#x2F;/, '/')
-      end
-      urls = files.collect {|s| baseurl + s }
       return {
         name:     library,
+        desc:     jdata['description'],
+        tags:     (jdata['keywords'] || []).join(", "),
         version:  version,
-        urls:     urls,
-        files:    files,
+        urls:     d['files'].collect {|s| baseurl + s },
+        files:    d['files'],
         baseurl:  baseurl,
       }
     end
@@ -501,6 +494,7 @@ END
       else
         s << "name:     #{d[:name]}\n"
         s << "version:  #{d[:version]}\n"
+        s << "desc:     #{d[:desc]}\n" if d[:desc]
         s << "tags:     #{d[:tags]}\n" if d[:tags]
         s << "site:     #{d[:site]}\n" if d[:site]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
