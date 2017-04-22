@@ -120,7 +120,7 @@ class Base(object):
             if not quiet:
                 echo_n("%s ..." % filepath)
             url = os.path.join(d['baseurl'], file)
-            content = self.fetch(url, library)
+            content = self.fetch(url)
             content = B(content)
             if not quiet:
                 echo_n(" Done (%s byte)" % format_integer(len(content)))
@@ -157,18 +157,6 @@ class CDNJS(Base):
     API_URL  = "https://api.cdnjs.com/libraries"
     CDN_URL  = "https://cdnjs.cloudflare.com/ajax/libs"
 
-    def fetch(self, url, library=None):
-        json_str = read_url(url)
-        if library:
-            if json_str == "{}":
-                if library.endswith('js'):
-                    maybe = (re.sub(r'\.js$', "js", library) if library.endswith(".js") else
-                             re.sub(r'js$', ".js", library))
-                    raise CommandError("%s: Library not found (maybe '%s'?)." % (library, maybe))
-                else:
-                    raise CommandError("%s: Library not found." % library)
-        return json_str
-
     def list(self):
         jstr = self.fetch("%s?fields=name,description" % self.API_URL)
         jdata = json.loads(S(jstr))
@@ -177,8 +165,10 @@ class CDNJS(Base):
 
     def find(self, library):
         self.validate(library, None)
-        jstr = self.fetch("%s/%s" % (self.API_URL, library), library)
+        jstr = self.fetch("%s/%s" % (self.API_URL, library))
         jdata = json.loads(S(jstr))
+        if jdata == {}:
+            return None
         return {
             'name': library,
             'desc': jdata['description'],
@@ -188,11 +178,13 @@ class CDNJS(Base):
 
     def get(self, library, version):
         self.validate(library, version)
-        jstr = self.fetch("%s/%s" % (self.API_URL, library), library)
+        jstr = self.fetch("%s/%s" % (self.API_URL, library))
         jdata = json.loads(S(jstr))
+        if jdata == {}:
+            return None
         d = find_one(jdata['assets'], lambda d: d['version'] == version)
         if d is None:
-            raise CommandError("%s/%s: Library or version not found." % (library, version))
+            return None
         baseurl = "%s/%s/%s/" % (self.CDN_URL, library, version)
         return {
             'name'   :  library,
@@ -222,10 +214,12 @@ class JSDelivr(Base):
     def find(self, library):
         self.validate(library, None)
         jstr = self.fetch("%s?name=%s&fields=name,description,homepage,versions" % (self.API_URL, library))
+        if jstr is None:
+            return None
         arr = json.loads(S(jstr))
         d = item_at(arr, 0)
         if not d:
-            raise CommandError("%s: Library not found." % library)
+            return None
         return {
             'name'    :  d['name'],
             'desc'    :  d['description'],
@@ -237,6 +231,8 @@ class JSDelivr(Base):
         self.validate(library, version)
         baseurl = "%s%s/%s" % (self.CDN_URL, library, version)
         jstr  = self.fetch("%s/%s/%s" % (self.API_URL, library, version))
+        if jstr is None:
+            return None
         files = json.loads(S(jstr))
         if not files:
             raise CommandError("%s: Library not found." % library)
@@ -297,7 +293,7 @@ class GoogleCDN(Base):
                 versions.extend(vers)
             break
         if not found:
-            raise CommandError("%s: Library not found." % library)
+            return None
         return {
             'name'    : library,
             'site'    : site_url,
@@ -309,7 +305,7 @@ class GoogleCDN(Base):
         self.validate(library, version)
         d = self.find(library)
         if version not in d['versions']:
-            raise CommandError("%s: No such version of %s." % (version, library))
+            return None
         urls = d['urls']
         if urls:
             rexp = r'(/libs/%s)/[^/]+' % library
@@ -442,7 +438,8 @@ Example:
         if self.quiet:
             fn = lambda d: "%s\n" % d['name']
         else:
-            fn = lambda d: "%-20s  # %s\n" % (d['name'], d['desc'])
+            f = lambda s: (s or "").replace("\n", " ").replace("\r", " ")
+            fn = lambda d, f=f: "%-20s  # %s\n" % (d['name'], f(d['desc']))
         return "".join( fn(d) for d in list )
 
     def do_list_cdns(self):
@@ -466,6 +463,8 @@ Example:
     def do_find_library(self, cdn_code, library):
         cdn = self.find_cdn(cdn_code)
         d = cdn.find(library)
+        if d is None:
+            raise CommandError("%s: library not found." % library)
         buf = []; add = buf.append
         if self.quiet:
             if d['versions']:
@@ -487,6 +486,11 @@ Example:
     def do_get_library(self, cdn_code, library, version):
         cdn = self.find_cdn(cdn_code)
         d = cdn.get(library, version)
+        if d is None:
+            if cdn.find(library) is None:
+                raise CommandError("%s: library not found." % library)
+            else:
+                raise CommandError("%s %s: version not found." % (library, version))
         buf = []; add = buf.append
         if self.quiet:
             if d.get('urls'):
