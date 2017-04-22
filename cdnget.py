@@ -134,7 +134,7 @@ class Base(object):
                 with open(filepath, 'wb') as f:
                     f.write(content)
             if not quiet:
-                print("")
+                echo_n("\n")
 
     def fetch(self, url, library=None):
         return read_url(url)
