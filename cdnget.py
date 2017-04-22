@@ -9,11 +9,11 @@
 ## - jsDelivr (https://www.jsdelivr.com/)
 ##
 ## Example:
-##  $ cdnget                                # list public CDN
-##  $ cdnget [-q] cdnjs                     # list libraries
-##  $ cdnget [-q] cdnjs jquery              # list versions
-##  $ cdnget [-q] cdnjs jquery 2.2.0        # list files
-##  $ cdnget [-q] cdnjs jquery 2.2.0 /tmp   # download files
+##  $ cdnget                           # list public CDN
+##  $ cdnget cdnjs                     # list libraries
+##  $ cdnget cdnjs jquery              # list versions
+##  $ cdnget cdnjs jquery 2.2.4        # list files
+##  $ cdnget cdnjs jquery 2.2.4 /tmp   # download files
 ##
 
 import sys, os, re
@@ -322,11 +322,11 @@ Options:
     -q, --quiet       : minimal output
 
 Example:
-    $ {script}                                # list public CDN
-    $ {script} [-q] cdnjs                     # list libraries
-    $ {script} [-q] cdnjs jquery              # list versions
-    $ {script} [-q] cdnjs jquery 2.2.4        # list files
-    $ {script} [-q] cdnjs jquery 2.2.4 /tmp   # download files
+    $ {script}                           # list public CDN
+    $ {script} cdnjs                     # list libraries
+    $ {script} cdnjs jquery              # list versions
+    $ {script} cdnjs jquery 2.2.4        # list files
+    $ {script} cdnjs jquery 2.2.4 /tmp   # download files
 '''[1:].format(script=self.script)
 
     def run(self, *args):
