@@ -29,11 +29,12 @@ if PY3:
     unicode    = str
     basestring = str
     from urllib.request import urlopen
+    from urllib.error import HTTPError
     stdout     = sys.stdout.buffer
     stderr     = sys.stderr.buffer
 elif PY2:
     bytes      = str
-    from urllib import urlopen
+    from urllib import urlopen, HTTPError
     stdout     = sys.stdout
     stderr     = sys.stderr
 
@@ -60,12 +61,14 @@ def echo_n(string):
     stdout.flush()
 
 def read_url(url):
-    req = urlopen(url)
-    s = req.read()
-    req.close()
-    if not (200 <= req.code < 300):
-        raise HttpError("GET %s : Failed to download." % (url,))
-    return s
+    try:
+        req = urlopen(url)
+    except HTTPError as ex:
+        return None
+    else:
+        s = req.read()
+        req.close()
+        return s
 
 def uniq(xs):
     prev = None
@@ -146,10 +149,6 @@ class Base(object):
         if version:
             if not re.match(r'^\d+(\.\d+)+([-.\w]+)?$', version):
                 raise ValueError("%r: Unexpected version number." % version)
-
-
-class HttpError(Exception):
-    pass
 
 
 class CDNJS(Base):
