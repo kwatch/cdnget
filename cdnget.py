@@ -343,7 +343,7 @@ class CommandError(Exception):
     pass
 
 
-class Main(object):
+class MainApp(object):
 
     def __init__(self, script=None):
         self.script = script or os.path.basename(sys.argv[0])
@@ -366,21 +366,6 @@ Example:
     $ {script} [-q] cdnjs jquery 2.2.4        # list files
     $ {script} [-q] cdnjs jquery 2.2.4 /tmp   # download files
 '''[1:].format(script=self.script)
-
-    @classmethod
-    def main(cls, args=None):
-        if args is None:
-            args = sys.argv[1:]
-        try:
-            output = cls().run(*args)
-        except CommandError as ex:
-            stderr.write(B(str(ex)))
-            stderr.write(b"\n")
-            sys.exit(1)
-        else:
-            if output:
-                stdout.write(B(output))
-            sys.exit(0)
 
     def run(self, *args):
         args = list(args)
@@ -528,5 +513,20 @@ Example:
         cdn.download(library, version, basedir, quiet=self.quiet)
 
 
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
+    try:
+        output = MainApp().run(*args)
+    except CommandError as ex:
+        stderr.write(B(str(ex)))
+        stderr.write(b"\n")
+        sys.exit(1)
+    else:
+        if output:
+            stdout.write(B(output))
+        sys.exit(0)
+
+
 if __name__ == '__main__':
-    Main.main()
+    main()
