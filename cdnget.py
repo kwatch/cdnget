@@ -106,39 +106,6 @@ class Base(object):
     def get(self, library, version):
         raise NotImplementedError("%s.get(): not implemented yet." % self.__class__.__name__)
 
-    def download(self, library, version, basedir=".", _=None, quiet=False):
-        self.validate(library, version)
-        if not os.path.exists(basedir):
-            raise CommandError("%s: not exist." % basedir)
-        if not os.path.isdir(basedir):
-            raise CommandError("%s: not a directory." % basedir)
-        target_dir = os.path.join(basedir, library, version)
-        d = self.get(library, version)
-        for file in d['files']:
-            filepath = os.path.join(target_dir, file)
-            dirpath  = os.path.dirname(filepath)
-            if not quiet:
-                echo_n("%s ..." % filepath)
-            url = os.path.join(d['baseurl'], file)
-            content = self.fetch(url)
-            content = B(content)
-            if not quiet:
-                echo_n(" Done (%s byte)" % format_integer(len(content)))
-            if not os.path.exists(dirpath):
-                os.makedirs(dirpath)
-            unchanged = False
-            if os.path.exists(filepath):
-                with open(filepath, 'rb') as f:
-                    unchanged = f.read() == content
-            if unchanged:
-                if not quiet:
-                    echo_n(" (Unchanged)")
-            else:
-                with open(filepath, 'wb') as f:
-                    f.write(content)
-            if not quiet:
-                echo_n("\n")
-
     def fetch(self, url, library=None):
         return read_url(url)
 
@@ -513,7 +480,38 @@ Example:
 
     def do_download_library(self, cdn_code, library, version, basedir):
         cdn = self.find_cdn(cdn_code)
-        cdn.download(library, version, basedir, quiet=self.quiet)
+        cdn.validate(library, version)
+        if not os.path.exists(basedir):
+            raise CommandError("%s: not exist." % basedir)
+        if not os.path.isdir(basedir):
+            raise CommandError("%s: not a directory." % basedir)
+        quiet = self.quiet
+        target_dir = os.path.join(basedir, library, version)
+        d = cdn.get(library, version)
+        for file in d['files']:
+            filepath = os.path.join(target_dir, file)
+            dirpath  = os.path.dirname(filepath)
+            if not quiet:
+                echo_n("%s ..." % filepath)
+            url = os.path.join(d['baseurl'], file)
+            content = cdn.fetch(url)
+            content = B(content)
+            if not quiet:
+                echo_n(" Done (%s byte)" % format_integer(len(content)))
+            if not os.path.exists(dirpath):
+                os.makedirs(dirpath)
+            unchanged = False
+            if os.path.exists(filepath):
+                with open(filepath, 'rb') as f:
+                    unchanged = f.read() == content
+            if unchanged:
+                if not quiet:
+                    echo_n(" (Unchanged)")
+            else:
+                with open(filepath, 'wb') as f:
+                    f.write(content)
+            if not quiet:
+                echo_n("\n")
 
 
 def main(args=None):
