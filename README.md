@@ -1,7 +1,7 @@
 cdnget
 ======
 
-($Release: 0.0.0 $)
+($Release: 1.0.0 $)
 
 Utility to download files from public CDN:
 
