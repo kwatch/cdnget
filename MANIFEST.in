@@ -1,0 +1,4 @@
+include LICENSE README.md setup.py Kookbook.py
+include cdnget.py
+include bin/cdnget
+recursive-include tests *.py
