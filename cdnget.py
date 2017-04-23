@@ -34,7 +34,7 @@ if PY3:
     stderr     = sys.stderr.buffer
 elif PY2:
     bytes      = str
-    from urllib import urlopen, HTTPError
+    from urllib2 import urlopen, HTTPError
     stdout     = sys.stdout
     stderr     = sys.stderr
 
