@@ -36,14 +36,14 @@ How to release:
   $ git add -p
   $ git commit -m "python: release preparation for 1.0.0"
   $ git tag py-1.0.0
-  $ git push
+  $ git push -u origin python-1.0
   $ git push --tags
 
   ### reset 'python' branch
   $ git checkout python
-  $ git reset --hard -
+  $ git reset --hard python-1.0
   $ git push -uf origin python
-  $ git checkout -
+  $ git checkout python-dev
 """)
 
 @recipe
