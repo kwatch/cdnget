@@ -466,7 +466,9 @@ END
 
     def do_list_libraries(cdn_code)
       cdn = find_cdn(cdn_code)
-      return render_list(cdn.list)
+      list = cdn.list()  or
+        raise CommandError.new("#{cdn_code}: cannot list libraries; please specify pattern such as 'jquery*'.")
+      return render_list(list)
     end
 
     def do_search_libraries(cdn_code, pattern)
