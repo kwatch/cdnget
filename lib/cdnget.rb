@@ -97,7 +97,10 @@ module CDNGet
     protected
 
     def http_get(url)
-      return URI.open(url, 'rb') {|f| f.read() }
+      ## * `open()` on Ruby 3.X can't open http url
+      ## * `URI.open()` on Ruby <= 2.4 raises NoMethodError (private method `open' called)
+      ## * `URI.__send__(:open)` is a hack to work on both Ruby 2.X and 3.X
+      return URI.__send__(:open, url, 'rb') {|f| f.read() }
     end
 
     def fetch(url, library=nil)
@@ -338,7 +341,7 @@ module CDNGet
     protected
 
     def http_get(url)
-      return URI.open(url, 'rb', {"x-spiferack"=>"1"}) {|f| f.read() }
+      return URI.__send__(:open, url, 'rb', {"x-spiferack"=>"1"}) {|f| f.read() }
     end
 
     public
