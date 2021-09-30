@@ -116,22 +116,24 @@ module CDNGet
     def fetch(url, library=nil)
       begin
         json_str = URI.open(url, 'rb') {|f| f.read() }
-        if library
-          if json_str == "{}"
-            if library.end_with?('js')
-              maybe = library.end_with?('.js') \
-                    ? library.sub('.js', 'js') \
-                    : library.sub(/js$/, '.js')
-              raise CommandError.new("#{library}: Library not found (maybe '#{maybe}'?).")
-            else
-              raise CommandError.new("#{library}: Library not found.")
-            end
-          end
+      rescue OpenURI::HTTPError => exc
+        if exc.message == "404 Not Found"
+          json_str = "{}"
+        else
+          raise HttpError.new("GET #{url} : #{ex.message}")
         end
-        return json_str
-      rescue OpenURI::HTTPError => ex
-        raise HttpError.new("GET #{url} : #{ex.message}")
       end
+      if json_str == "{}" && library
+        if library.end_with?('js')
+          maybe = library.end_with?('.js') \
+                ? library.sub('.js', 'js') \
+                : library.sub(/js$/, '.js')
+          raise CommandError.new("#{library}: Library not found (maybe '#{maybe}'?).")
+        else
+          raise CommandError.new("#{library}: Library not found.")
+        end
+      end
+      return json_str
     end
     protected :fetch
 
