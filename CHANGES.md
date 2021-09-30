@@ -2,6 +2,13 @@ Changes
 =======
 
 
+Release 0.3.1 (2021-09-30)
+---------------------------
+
+* Fix to work on Ruby 3.
+* Fix to follow API specification changes of CDNJS.com.
+
+
 Release 0.3.0 (2016-09-07)
 ---------------------------
 
