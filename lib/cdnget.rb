@@ -17,6 +17,7 @@
 ##
 
 require 'open-uri'
+require 'uri'
 require 'json'
 require 'fileutils'
 
@@ -79,7 +80,7 @@ module CDNGet
 
     def fetch(url, library=nil)
       begin
-        html = open(url, 'rb') {|f| f.read() }
+        html = URI.open(url, 'rb') {|f| f.read() }
         return html
       rescue OpenURI::HTTPError => ex
         raise CommandError.new("GET #{url} : #{ex.message}")
@@ -114,7 +115,7 @@ module CDNGet
 
     def fetch(url, library=nil)
       begin
-        json_str = open(url, 'rb') {|f| f.read() }
+        json_str = URI.open(url, 'rb') {|f| f.read() }
         if library
           if json_str == "{}"
             if library.end_with?('js')
