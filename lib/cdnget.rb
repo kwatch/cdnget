@@ -25,7 +25,7 @@ require 'fileutils'
 module CDNGet
 
 
-  RELEASE = '$Release: 0.3.0 $'.split()[1]
+  RELEASE = '$Release: 0.3.1 $'.split()[1]
 
   CLASSES = []
 
