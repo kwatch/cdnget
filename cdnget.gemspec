@@ -8,7 +8,7 @@ Gem::Specification.new do |o|
 
   o.summary       = "Utility to download files from CDNJS, jsDelivr or Google."
   o.description   = "Utility to download files from CDNJS, jsDelivr or Google."
-  o.homepage      = "https://github.com/kwatch/cdnget"
+  o.homepage      = "https://github.com/kwatch/cdnget/tree/ruby-release"
   o.license       = "MIT"
 
   o.files         = Dir[*%w[
@@ -24,5 +24,5 @@ Gem::Specification.new do |o|
   o.required_ruby_version = '>= 2.0'
 
   o.add_development_dependency "minitest", "~> 5.4"
-  o.add_development_dependency "minitest-ok", "~> 1.0"
+  o.add_development_dependency "minitest-ok", "~> 0.3"
 end
