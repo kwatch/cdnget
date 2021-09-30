@@ -65,6 +65,16 @@ module CDNGet
       d = get(library, version)
       d[:files].each do |file|
         filepath = File.join(target_dir, file)
+        if filepath.end_with?('/')
+          if File.exist?(filepath)
+            puts "#{filepath} ... Done (Already exists)" unless quiet
+          else
+            print "#{filepath} ..." unless quiet
+            FileUtils.mkdir_p(filepath)
+            puts " Done (Created)" unless quiet
+          end
+          next
+        end
         dirpath  = File.dirname(filepath)
         print "#{filepath} ..." unless quiet
         url = File.join(d[:baseurl], file)   # not use URI.join!
