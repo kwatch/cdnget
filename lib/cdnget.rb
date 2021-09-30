@@ -61,8 +61,9 @@ module CDNGet
         raise CommandError.new("#{basedir}: not exist.")
       File.directory?(basedir)  or
         raise CommandError.new("#{basedir}: not a directory.")
-      target_dir = File.join(basedir, library, version)
       d = get(library, version)
+      target_dir = d[:destdir] ? File.join(basedir, d[:destdir]) \
+                               : File.join(basedir, library, version)
       d[:files].each do |file|
         filepath = File.join(target_dir, file)
         if filepath.end_with?('/')
@@ -322,6 +323,95 @@ module CDNGet
         files:   files,
         baseurl: baseurl,
         version: version,
+      }
+    end
+
+  end
+
+
+  class Unpkg < Base
+    CODE = "unpkg"
+    SITE_URL = "https://unpkg.com/"
+    #API_URL  = "https://www.npmjs.com"
+    API_URL  = "https://api.npms.io/v2"
+
+    protected
+
+    def http_get(url)
+      return URI.open(url, 'rb', {"x-spiferack"=>"1"}) {|f| f.read() }
+    end
+
+    public
+
+    def list
+      return nil
+    end
+
+    def search(pattern)
+      json = fetch("#{API_URL}/search?q=#{pattern}")
+      #json = fetch("#{API_URL}/search?q=#{pattern}&size=100")
+      jdata = JSON.load(json)
+      #arr = jdata["objects"]   # www.npmjs.com
+      arr = jdata["results"]    # api.npms.io
+      return arr.select {|dict|
+        File.fnmatch(pattern, dict["package"]["name"])
+      }.collect {|dict|
+        d = dict["package"]
+        File.fnmatch(pattern, d["name"]) ? {
+          name:    d["name"],
+          desc:    d["description"],
+          version: d["version"],
+        } : nil
+      }
+    end
+
+    def find(library)
+      validate(library, nil)
+      json = fetch("#{API_URL}/package/#{library}", library)
+      jdata = JSON.load(json)
+      dict = jdata["collected"]["metadata"]
+      versions = [dict["version"]]
+      #
+      url = File.join(SITE_URL, "/browse/#{library}/")
+      html = fetch(url, library)
+      if html =~ /<script>window.__DATA__\s*=\s*(.*?)<\/script>/m
+        jdata2 = JSON.load($1)
+        versions = jdata2["availableVersions"].reverse()
+      end
+      #
+      return {
+        #name:     jdata["capsule"]["name"],
+        #desc:     jdata["capsule"]["description"],
+        #site:     jdata["packageVersion"]["homepage"],
+        #versions: jdata["packument"]["versions"].collect {|d| d["version"] },
+        name:      dict["name"],
+        desc:      dict["description"],
+        site:      dict["links"] ? dict["links"]["homepage"] : dict["links"]["npm"],
+        version:   dict["version"],
+        versions:  versions,
+      }
+    end
+
+    def get(library, version)
+      validate(library, version)
+      url  = File.join(SITE_URL, "/browse/#{library}@#{version}/")
+      html = fetch(url, library)
+      html =~ /<script>window.__DATA__\s*=\s*(.*?)<\/script>/m  or
+        raise CommandError.new("#{library}: failed to fetch data.")
+      jdata = JSON.load($1)
+      files = jdata["target"]["details"].collect {|key, val|
+        path = val["path"]
+        path += "/" if val["type"] == "directory"
+        path
+      }
+      baseurl = File.join(SITE_URL, "/#{library}@#{version}")
+      return {
+        name:     library,
+        version:  version,
+        destdir:  "#{library}@#{version}",
+        urls:     files.collect {|x| baseurl+x },
+        files:    files,
+        baseurl:  baseurl,
       }
     end
 
