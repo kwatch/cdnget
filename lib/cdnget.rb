@@ -40,6 +40,13 @@ module CDNGet
       raise NotImplementedError.new("#{self.class.name}#list(): not implemented yet.")
     end
 
+    def search(pattern)
+      #return list().select {|a| File.fnmatch(pattern, a[:name]) }
+      rexp_str = pattern.split('*', -1).collect {|x| Regexp.escape(x) }.join('.*')
+      rexp = Regexp.compile("\\A#{rexp_str}\\z", Regexp::IGNORECASE)
+      return list().select {|a| a[:name] =~ rexp }
+    end
+
     def find(library)
       raise NotImplementedError.new("#{self.class.name}#find(): not implemented yet.")
     end
@@ -461,9 +468,7 @@ END
 
     def do_search_libraries(cdn_code, pattern)
       cdn = find_cdn(cdn_code)
-      rexp_str = pattern.split('*', -1).collect {|x| Regexp.escape(x) }.join('.*')
-      rexp = Regexp.compile("\\A#{rexp_str}\\z", Regexp::IGNORECASE)
-      return render_list(cdn.list.select {|a| a[:name] =~ rexp })
+      return render_list(cdn.search(pattern))
     end
 
     def do_find_library(cdn_code, library)
