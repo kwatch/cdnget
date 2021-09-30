@@ -89,8 +89,15 @@ module CDNGet
       begin
         html = URI.open(url, 'rb') {|f| f.read() }
         return html
-      rescue OpenURI::HTTPError => ex
-        raise CommandError.new("GET #{url} : #{ex.message}")
+      rescue OpenURI::HTTPError => exc
+        if ! (exc.message == "404 Not Found" && library)
+          raise CommandError.new("GET #{url} : #{exc.message}")
+        elsif ! library.end_with?('js')
+          raise CommandError.new("#{library}: Library not found.")
+        else
+          maybe = library.end_with?('.js') ? library.sub('.js', 'js') : library.sub(/js$/, '.js')
+          raise CommandError.new("#{library}: Library not found (maybe '#{maybe}'?).")
+        end
       end
     end
 
@@ -121,15 +128,7 @@ module CDNGet
     SITE_URL = 'https://cdnjs.com/'
 
     def fetch(url, library=nil)
-      begin
-        json_str = URI.open(url, 'rb') {|f| f.read() }
-      rescue OpenURI::HTTPError => exc
-        if exc.message == "404 Not Found"
-          json_str = "{}"
-        else
-          raise HttpError.new("GET #{url} : #{ex.message}")
-        end
-      end
+      json_str = super
       if json_str == "{}" && library
         if library.end_with?('js')
           maybe = library.end_with?('.js') \
