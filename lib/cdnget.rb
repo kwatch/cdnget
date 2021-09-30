@@ -85,9 +85,13 @@ module CDNGet
 
     protected
 
+    def http_get(url)
+      return URI.open(url, 'rb') {|f| f.read() }
+    end
+
     def fetch(url, library=nil)
       begin
-        html = URI.open(url, 'rb') {|f| f.read() }
+        html = http_get(url)
         return html
       rescue OpenURI::HTTPError => exc
         if ! (exc.message == "404 Not Found" && library)
