@@ -147,11 +147,13 @@ module CDNGet
       validate(library, nil)
       jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
       jdata = JSON.parse(jstr)
+      versions = jdata['assets'].collect {|d| d['version'] }\
+                   .sort_by {|v| v.split(/[-.]/).map(&:to_i) }
       return {
         name: library,
         desc: jdata['description'],
         tags: (jdata['keywords'] || []).join(", "),
-        versions: jdata['assets'].collect {|d| d['version'] },
+        versions: versions.reverse(),
       }
     end
 
