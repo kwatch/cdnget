@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |o|
   o.name          = "cdnget"
-  o.version       = '$Release: 0.0.0 $'.split()[1]
+  o.version       = '$Release: 1.0.0 $'.split()[1]
   o.authors       = ["makoto kuwata"]
   o.email         = ["kwa@kuwata-lab.com"]
 
