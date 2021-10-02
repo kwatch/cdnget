@@ -871,6 +871,141 @@ END
   end
 
 
+  describe "cdnget CDN swfobject latest" do
+
+    it "(cdnjs) shows latest version." do
+      actual = CDNGet::Main.new("cdnget").run("cdnjs", "swfobject", "latest")
+      ok {actual} == <<END
+name:     swfobject
+version:  2.2
+desc:     SWFObject is an easy-to-use and standards-friendly method to embed Flash content, which utilizes one small JavaScript file
+tags:     swf, flash
+site:     http://code.google.com/p/swfobject/
+license:  MIT
+urls:
+  - https://cdnjs.cloudflare.com/ajax/libs/swfobject/2.2/swfobject.js
+  - https://cdnjs.cloudflare.com/ajax/libs/swfobject/2.2/swfobject.min.js
+END
+    end
+
+    it "(google) shows latest version." do
+      actual = CDNGet::Main.new("cdnget").run("google", "swfobject", "latest")
+      ok {actual} == <<END
+name:     swfobject
+version:  2.2
+site:     https://github.com/swfobject/swfobject
+urls:
+  - https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js
+END
+    end
+
+    it "(jsdelivr) shows latest version." do
+      actual = CDNGet::Main.new("cdnget").run("jsdelivr", "swfobject", "latest")
+      ok {actual} == <<END
+name:     swfobject
+version:  2.2.1
+desc:     SWFObject is an easy-to-use and standards-friendly method to embed Flash content, which utilizes one small JavaScript file
+tags:     SWFObject, swf, object, flash, embed, content
+default:  /index.min.js
+license:  MIT
+urls:
+  - https://cdn.jsdelivr.net/npm/swfobject@2.2.1/.npmignore
+  - https://cdn.jsdelivr.net/npm/swfobject@2.2.1/download.sh
+  - https://cdn.jsdelivr.net/npm/swfobject@2.2.1/expressInstall.swf
+  - https://cdn.jsdelivr.net/npm/swfobject@2.2.1/index.js
+  - https://cdn.jsdelivr.net/npm/swfobject@2.2.1/package.json
+  - https://cdn.jsdelivr.net/npm/swfobject@2.2.1/patch.js
+  - https://cdn.jsdelivr.net/npm/swfobject@2.2.1/README.md
+END
+    end
+
+    it "(unpkg) shows latest version." do
+      actual = CDNGet::Main.new("cdnget").run("unpkg", "swfobject", "latest")
+      ok {actual} == <<END
+name:     swfobject
+version:  2.2.1
+desc:     SWFObject is an easy-to-use and standards-friendly method to embed Flash content, which utilizes one small JavaScript file
+tags:     SWFObject, swf, object, flash, embed, content
+site:     https://github.com/unshiftio/swfobject
+default:  /index.min.js
+license:  MIT
+urls:
+  - https://unpkg.com/swfobject@2.2.1/.npmignore
+  - https://unpkg.com/swfobject@2.2.1/download.sh
+  - https://unpkg.com/swfobject@2.2.1/expressInstall.swf
+  - https://unpkg.com/swfobject@2.2.1/index.js
+  - https://unpkg.com/swfobject@2.2.1/package.json
+  - https://unpkg.com/swfobject@2.2.1/patch.js
+  - https://unpkg.com/swfobject@2.2.1/README.md
+END
+    end
+
+  end
+
+
+  describe "cdnget CDN swfobject latest dir" do
+
+    before do
+      @tmpdir = "tmpdir1"
+      Dir.mkdir @tmpdir
+    end
+
+    after do
+      FileUtils.rm_rf @tmpdir
+    end
+
+    it "(cdnjs) downlaods latest version." do
+      sout, serr = capture_io do()
+        CDNGet::Main.new("cdnget").run("cdnjs", "swfobject", "latest", @tmpdir)
+      end
+      ok {sout} == <<"END"
+#{@tmpdir}/swfobject/2.2/swfobject.js ... Done (10,220 byte)
+#{@tmpdir}/swfobject/2.2/swfobject.min.js ... Done (9,211 byte)
+END
+    end
+
+    it "(google) downlaods latest version." do
+      sout, serr = capture_io do()
+        CDNGet::Main.new("cdnget").run("google", "swfobject", "latest", @tmpdir)
+      end
+      ok {sout} == <<"END"
+#{@tmpdir}/swfobject/2.2/swfobject.js ... Done (10,220 byte)
+END
+    end
+
+    it "(jsdelivr) downlaods latest version." do
+      sout, serr = capture_io do()
+        CDNGet::Main.new("cdnget").run("jsdelivr", "swfobject", "latest", @tmpdir)
+      end
+      ok {sout} == <<"END"
+#{@tmpdir}/swfobject@2.2.1/.npmignore ... Done (13 byte)
+#{@tmpdir}/swfobject@2.2.1/download.sh ... Done (517 byte)
+#{@tmpdir}/swfobject@2.2.1/expressInstall.swf ... Done (727 byte)
+#{@tmpdir}/swfobject@2.2.1/index.js ... Done (10,331 byte)
+#{@tmpdir}/swfobject@2.2.1/package.json ... Done (524 byte)
+#{@tmpdir}/swfobject@2.2.1/patch.js ... Done (277 byte)
+#{@tmpdir}/swfobject@2.2.1/README.md ... Done (764 byte)
+END
+    end
+
+    it "(unpkg) downlaods latest version." do
+      sout, serr = capture_io do()
+        CDNGet::Main.new("cdnget").run("unpkg", "swfobject", "latest", @tmpdir)
+      end
+      ok {sout} == <<"END"
+#{@tmpdir}/swfobject@2.2.1/.npmignore ... Done (13 byte)
+#{@tmpdir}/swfobject@2.2.1/download.sh ... Done (517 byte)
+#{@tmpdir}/swfobject@2.2.1/expressInstall.swf ... Done (727 byte)
+#{@tmpdir}/swfobject@2.2.1/index.js ... Done (10,331 byte)
+#{@tmpdir}/swfobject@2.2.1/package.json ... Done (524 byte)
+#{@tmpdir}/swfobject@2.2.1/patch.js ... Done (277 byte)
+#{@tmpdir}/swfobject@2.2.1/README.md ... Done (764 byte)
+END
+    end
+
+  end
+
+
   describe "cdnget CDN jquery 2.2.0 foo bar" do
 
     it "results in argument error." do
