@@ -565,8 +565,10 @@ Example:
   $ #{script} [-q] cdnjs                     # list libraries
   $ #{script} [-q] cdnjs 'jquery*'           # search libraries
   $ #{script} [-q] cdnjs jquery              # list versions
+  $ #{script} [-q] cdnjs jquery latest       # show latest version
   $ #{script} [-q] cdnjs jquery 3.6.0        # list files
   $ #{script} [-q] cdnjs jquery 3.6.0 /tmp   # download files into directory
+
 END
     end
 
