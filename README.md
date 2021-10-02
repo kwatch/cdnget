@@ -3,7 +3,7 @@ CDNget
 
 ($Release: 0.0.0 $)
 
-CDNget is a utility script to download files from CDNJS, jsDelivr or Google.
+CDNget is a utility script to download files from CDNJS, JSDelivr, UNPKG, or Google.
 
 
 Install
@@ -23,10 +23,11 @@ CDNget is implemented in Ruby and requires Ruby >= 2.0.
 Usage
 -----
 
-    $ cdnget                               # list CDN (cdnjs/jsdelivr/google)
+    $ cdnget                               # list CDN (cdnjs/jsdelivr/unpkg/google)
     $ cdnget [-q] cdnjs                    # list libraries
     $ cdnget [-q] cdnjs '*jquery*'         # search libraries
     $ cdnget [-q] cdnjs jquery             # list library versions
+    $ cdnget [-q] cdnjs jquery latest      # show latest version
     $ cdnget [-q] cdnjs jquery 2.2.0       # list library files
     $ cdnget [-q] cdnjs jquery 2.2.0 /tmp  # download files
     /tmp/jquery/2.2.0/jquery.js ... Done (258,388 byte)
@@ -40,7 +41,8 @@ Usage
 Todo
 ----
 
-* [_] change to call api.cdnjs.com
+* [x] change to call api.cdnjs.com
+* [x] support <https://unpkg.com/>
 
 
 Copyright and License
