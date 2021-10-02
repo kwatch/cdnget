@@ -610,8 +610,14 @@ Example:
   $ #{script} [-q] cdnjs 'jquery*'           # search libraries
   $ #{script} [-q] cdnjs jquery              # list versions
   $ #{script} [-q] cdnjs jquery latest       # show latest version
-  $ #{script} [-q] cdnjs jquery 3.6.0        # list files
-  $ #{script} [-q] cdnjs jquery 3.6.0 /tmp   # download files into directory
+  $ #{script} [-q] cdnjs jquery 2.2.0        # list files
+  $ mkdir -p static/lib                      # create a directory
+  $ #{script} [-q] cdnjs jquery 2.2.0 static/lib  # download files
+  static/lib/jquery/2.2.0/jquery.js ... Done (258,388 byte)
+  static/lib/jquery/2.2.0/jquery.min.js ... Done (85,589 byte)
+  static/lib/jquery/2.2.0/jquery.min.map ... Done (129,544 byte)
+  $ ls static/lib/jquery/2.2.0
+  jquery.js       jquery.min.js   jquery.min.map
 
 END
     end
