@@ -373,6 +373,7 @@ module CDNGet
       dict.update({
         version: version,
         info:    File.join(SITE_URL, "/package/npm/#{library}?version=#{version}"),
+        npmpkg:  "https://registry.npmjs.org/#{library}/-/#{library}-#{version}.tgz",
         urls:    files.collect {|x| baseurl + x },
         files:   files,
         baseurl: baseurl,
@@ -465,6 +466,7 @@ module CDNGet
         name:     library,
         version:  version,
         info:     File.join(SITE_URL, "/browse/#{library}@#{version}/"),
+        npmpkg:  "https://registry.npmjs.org/#{library}/-/#{library}-#{version}.tgz",
         urls:     files.collect {|x| baseurl+x },
         files:    files,
         baseurl:  baseurl,
@@ -764,6 +766,7 @@ END
         s << "tags:     #{d[:tags]}\n" if d[:tags]
         s << "site:     #{d[:site]}\n" if d[:site]
         s << "info:     #{d[:info]}\n" if d[:info]
+        s << "npmpkg:   #{d[:npmpkg]}\n" if d[:npmpkg]
         s << "default:  #{d[:default]}\n" if d[:default]
         s << "license:  #{d[:license]}\n" if d[:license]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]

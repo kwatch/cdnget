@@ -381,6 +381,7 @@ desc:     JavaScript library for DOM operations
 tags:     jquery, javascript, browser, library
 site:     https://jquery.com
 info:     https://www.jsdelivr.com/package/npm/jquery?version=2.2.0
+npmpkg:   https://registry.npmjs.org/jquery/-/jquery-2.2.0.tgz
 default:  /dist/jquery.min.js
 license:  MIT
 urls:
@@ -403,6 +404,7 @@ desc:     JavaScript library for DOM operations
 tags:     jquery, javascript, browser, library
 site:     https://jquery.com
 info:     https://unpkg.com/browse/jquery@3.6.0/
+npmpkg:   https://registry.npmjs.org/jquery/-/jquery-3.6.0.tgz
 default:  /dist/jquery.min.js
 license:  MIT
 urls:
@@ -918,6 +920,7 @@ version:  2.2.1
 desc:     SWFObject is an easy-to-use and standards-friendly method to embed Flash content, which utilizes one small JavaScript file
 tags:     SWFObject, swf, object, flash, embed, content
 info:     https://www.jsdelivr.com/package/npm/swfobject?version=2.2.1
+npmpkg:   https://registry.npmjs.org/swfobject/-/swfobject-2.2.1.tgz
 default:  /index.min.js
 license:  MIT
 urls:
@@ -940,6 +943,7 @@ desc:     SWFObject is an easy-to-use and standards-friendly method to embed Fla
 tags:     SWFObject, swf, object, flash, embed, content
 site:     https://github.com/unshiftio/swfobject
 info:     https://unpkg.com/browse/swfobject@2.2.1/
+npmpkg:   https://registry.npmjs.org/swfobject/-/swfobject-2.2.1.tgz
 default:  /index.min.js
 license:  MIT
 urls:
