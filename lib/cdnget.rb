@@ -29,6 +29,51 @@ module CDNGet
 
   RELEASE = '$Release: 0.0.0 $'.split()[1]
 
+
+  class HttpConnection
+
+    def initialize(uri)
+      http = Net::HTTP.new(uri.host, uri.port)
+      if uri.scheme == 'https'
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      end
+      http.start()
+      @http = http
+    end
+
+    def self.open(uri)
+      return self.new(uri)
+    end
+
+    def read(uri)
+      resp = @http.send_request('GET', uri.path)
+      case resp
+      when Net::HTTPSuccess
+        return resp.body
+      #when HTTPInformation, Net::HTTPRedirection, HTTPClientError, HTTPServerError
+      else
+        raise HttpError, resp.code.to_i, resp.message
+      end
+    end
+
+    def close()
+      @http.finish()
+    end
+
+  end
+
+
+  class HttpError < StandardError
+    def initialize(code, msgtext)
+      super("#{code} #{msgtext}")
+      @code = code
+      @msgtext = msgtext
+    end
+    attr_reader :code, :msgtext
+  end
+
+
   CLASSES = []
 
 
@@ -83,8 +128,8 @@ module CDNGet
         print "#{filepath} ..." unless quiet
         url = File.join(d[:baseurl], file)   # not use URI.join!
         uri = URI.parse(url)
-        http ||= http_open(uri)
-        content = http_read(http, uri)
+        http ||= HttpConnection.new(uri)
+        content = http.read(uri)
         content = content.force_encoding('ascii-8bit')
         print " Done (#{format_integer(content.bytesize)} byte)" unless quiet
         FileUtils.mkdir_p(dirpath) unless File.exist?(dirpath)
@@ -96,36 +141,11 @@ module CDNGet
         end
         puts() unless quiet
       end
-      http_close(http)
+      http.close() if http
       nil
     end
 
     protected
-
-    def http_open(uri)
-      http = Net::HTTP.new(uri.host, uri.port)
-      if uri.scheme == 'https'
-        http.use_ssl = true
-        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      end
-      http.start()
-      return http
-    end
-
-    def http_read(http, uri)
-      resp = http.send_request('GET', uri.path)
-      case resp
-      when Net::HTTPSuccess
-        return resp.body
-      #when HTTPInformation, Net::HTTPRedirection, HTTPClientError, HTTPServerError
-      else
-        raise HttpError, resp.code.to_i, resp.message
-      end
-    end
-
-    def http_close(http)
-      http.finish()
-    end
 
     def http_get(url)
       ## * `open()` on Ruby 3.X can't open http url
@@ -165,16 +185,6 @@ module CDNGet
       return value.to_s.reverse.scan(/..?.?/).collect {|s| s.reverse }.reverse.join(',')
     end
 
-  end
-
-
-  class HttpError < StandardError
-    def initialize(code, msgtext)
-      super("#{code} #{msgtext}")
-      @code = code
-      @msgtext = msgtext
-    end
-    attr_reader :code, :msgtext
   end
 
 
