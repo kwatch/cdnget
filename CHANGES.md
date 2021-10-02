@@ -2,6 +2,12 @@ Changes
 =======
 
 
+Release 1.0.1 (2021-10-02)
+---------------------------
+
+* Skip downloading '.DS_Store' files from unpkg.com (due to 403 Forbidden)
+
+
 Release 1.0.0 (2021-10-02)
 ---------------------------
 
