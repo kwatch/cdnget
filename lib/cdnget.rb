@@ -30,7 +30,7 @@ require 'pp'
 module CDNGet
 
 
-  RELEASE = '$Release: 1.0.0 $'.split()[1]
+  RELEASE = '$Release: 1.0.1 $'.split()[1]
 
 
   class HttpConnection
