@@ -455,8 +455,8 @@ module CDNGet
     end
 
     def search(pattern)
-      json = fetch("#{API_URL}/search?q=#{pattern}")
-      #json = fetch("#{API_URL}/search?q=#{pattern}&size=100")
+      #json = fetch("#{API_URL}/search?q=#{pattern}")
+      json = fetch("#{API_URL}/search?q=#{pattern}&size=250")
       jdata = JSON.load(json)
       #arr = jdata["objects"]   # www.npmjs.com
       arr = jdata["results"]    # api.npms.io
