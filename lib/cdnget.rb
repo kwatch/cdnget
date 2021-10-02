@@ -239,8 +239,7 @@ module CDNGet
     end
     protected :fetch
 
-    def list
-      libs = []
+    def list()
       jstr = fetch("https://api.cdnjs.com/libraries?fields=name,description")
       jdata = JSON.parse(jstr)
       _debug_print(jdata)
@@ -301,8 +300,8 @@ module CDNGet
       "x-algo""lia-api""-key"=>"f54e21fa3a2""a0160595bb05""8179bfb1e",
     }
 
-    def list
-      return nil
+    def list()
+      return nil    # nil means that this CDN can't list libraries without pattern
     end
 
     def search(pattern)
@@ -400,8 +399,8 @@ module CDNGet
 
     public
 
-    def list
-      return nil
+    def list()
+      return nil    # nil means that this CDN can't list libraries without pattern
     end
 
     def search(pattern)
@@ -483,11 +482,11 @@ module CDNGet
     CODE = "google"
     SITE_URL = 'https://developers.google.com/speed/libraries/'
 
-    def list
-      libs = []
+    def list()
       html = fetch("https://developers.google.com/speed/libraries/")
       _debug_print(html)
       rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/([^/]+)/([^/]+)/([^"]+)"`
+      libs = []
       html.scan(rexp) do |lib, ver, file|
         libs << {name: lib, desc: "latest version: #{ver}" }
       end
@@ -508,9 +507,7 @@ module CDNGet
           found = true
           if text =~ /<dt>.*?snippet:<\/dt>\s*<dd>(.*?)<\/dd>/m
             s = $1
-            s.scan(/\b(?:src|href)="([^"]*?)"/) do |href,|
-              urls << href
-            end
+            s.scan(/\b(?:src|href)="([^"]*?)"/) {|href,| urls << href }
           end
           if text =~ /<dt>site:<\/dt>\s*<dd>(.*?)<\/dd>/m
             s = $1
@@ -585,7 +582,7 @@ module CDNGet
       @script = script || File.basename($0)
     end
 
-    def help_message
+    def help_message()
       script = @script
       return <<END
 #{script}  -- download files from public CDN (cdnjs/jsdelivr/unpkg/google)
@@ -637,11 +634,9 @@ END
         return do_list_libraries(cdn_code)
       when 2
         cdn_code, library = args
-        if library.include?('*')
-          return do_search_libraries(cdn_code, library)
-        else
-          return do_find_library(cdn_code, library)
-        end
+        return library.include?('*') \
+               ? do_search_libraries(cdn_code, library) \
+               : do_find_library(cdn_code, library)
       when 3
         cdn_code, library, version = args
         return do_get_library(cdn_code, library, version)
@@ -699,19 +694,13 @@ END
     end
 
     def render_list(list)
-      if @quiet
-        return list.collect {|d| "#{d[:name]}\n" }.join()
-      else
-        return list.collect {|d| "%-20s  # %s\n" % [d[:name], d[:desc]] }.join()
-      end
+      return list.collect {|d| "#{d[:name]}\n" }.join() if @quiet
+      return list.collect {|d| "%-20s  # %s\n" % [d[:name], d[:desc]] }.join()
     end
 
-    def do_list_cdns
-      if @quiet
-        return CLASSES.map {|c| "#{c::CODE}\n" }.join()
-      else
-        return CLASSES.map {|c| "%-10s  # %s\n" % [c::CODE, c::SITE_URL] }.join()
-      end
+    def do_list_cdns()
+      return CLASSES.map {|c| "#{c::CODE}\n" }.join() if @quiet
+      return CLASSES.map {|c| "%-10s  # %s\n" % [c::CODE, c::SITE_URL] }.join()
     end
 
     def do_list_libraries(cdn_code)
@@ -736,10 +725,10 @@ END
         end if d[:versions]
       else
         s << "name:     #{d[:name]}\n"
-        s << "desc:     #{d[:desc]}\n" if d[:desc]
-        s << "tags:     #{d[:tags]}\n" if d[:tags]
-        s << "site:     #{d[:site]}\n" if d[:site]
-        s << "info:     #{d[:info]}\n" if d[:info]
+        s << "desc:     #{d[:desc]}\n"    if d[:desc]
+        s << "tags:     #{d[:tags]}\n"    if d[:tags]
+        s << "site:     #{d[:site]}\n"    if d[:site]
+        s << "info:     #{d[:info]}\n"    if d[:info]
         s << "license:  #{d[:license]}\n" if d[:license]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
         s << "versions:\n"
@@ -762,11 +751,11 @@ END
       else
         s << "name:     #{d[:name]}\n"
         s << "version:  #{d[:version]}\n"
-        s << "desc:     #{d[:desc]}\n" if d[:desc]
-        s << "tags:     #{d[:tags]}\n" if d[:tags]
-        s << "site:     #{d[:site]}\n" if d[:site]
-        s << "info:     #{d[:info]}\n" if d[:info]
-        s << "npmpkg:   #{d[:npmpkg]}\n" if d[:npmpkg]
+        s << "desc:     #{d[:desc]}\n"    if d[:desc]
+        s << "tags:     #{d[:tags]}\n"    if d[:tags]
+        s << "site:     #{d[:site]}\n"    if d[:site]
+        s << "info:     #{d[:info]}\n"    if d[:info]
+        s << "npmpkg:   #{d[:npmpkg]}\n"  if d[:npmpkg]
         s << "default:  #{d[:default]}\n" if d[:default]
         s << "license:  #{d[:license]}\n" if d[:license]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
