@@ -2,6 +2,13 @@ Changes
 =======
 
 
+Release 1.0.2 (2021-10-03)
+---------------------------
+
+* Improve help message.
+* Update `README.md`.
+
+
 Release 1.0.1 (2021-10-02)
 ---------------------------
 
