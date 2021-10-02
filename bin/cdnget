@@ -137,8 +137,15 @@ module CDNGet
       target_dir = d[:destdir] ? File.join(basedir, d[:destdir]) \
                                : File.join(basedir, library, version)
       http = nil
+      skipfile = d[:skipfile]   # ex: /\.DS_Store\z/
       d[:files].each do |file|
         filepath = File.join(target_dir, file)
+        #
+        if skipfile && file =~ skipfile
+          puts "#{filepath} ... Skipped"   # for example, skip '.DS_Store' files
+          next
+        end
+        #
         if filepath.end_with?('/')
           if File.exist?(filepath)
             puts "#{filepath} ... Done (Already exists)" unless quiet
@@ -149,6 +156,7 @@ module CDNGet
           end
           next
         end
+        #
         dirpath  = File.dirname(filepath)
         print "#{filepath} ..." unless quiet
         url = File.join(d[:baseurl], file)   # not use URI.join!
@@ -471,6 +479,7 @@ module CDNGet
         baseurl:  baseurl,
         default:  jdata["default"],
         destdir:  "#{library}@#{version}",
+        skipfile: /\.DS_Store\z/,  # downloading '.DS_Store' from UNPKG results in 403
       })
       return dict
     end
