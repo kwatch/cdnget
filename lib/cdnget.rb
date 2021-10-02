@@ -244,6 +244,7 @@ module CDNGet
         desc: jdata['description'],
         tags: (jdata['keywords'] || []).join(", "),
         site: jdata['homepage'],
+        info: File.join(SITE_URL, "/libraries/#{library}"),
         license: jdata['license'],
         versions: versions.reverse(),
       }
@@ -262,6 +263,7 @@ module CDNGet
         desc:     jdata['description'],
         tags:     (jdata['keywords'] || []).join(", "),
         site:     jdata['homepage'],
+        info:     File.join(SITE_URL, "/libraries/#{library}/#{version}"),
         urls:     d['files'].collect {|s| baseurl + s },
         files:    d['files'],
         baseurl:  baseurl,
@@ -328,6 +330,7 @@ module CDNGet
         versions:  dict2['versions'],
         tags:      (d['keywords'] || []).join(", "),
         site:      d['homepage'],
+        info:      File.join(SITE_URL, "/package/npm/#{library}"),
         license:   d['license'],
       }
     end
@@ -348,6 +351,7 @@ module CDNGet
       dict.delete(:versions)
       dict.update({
         version: version,
+        info:    File.join(SITE_URL, "/package/npm/#{library}?version=#{version}"),
         urls:    files.collect {|x| baseurl + x },
         files:   files,
         baseurl: baseurl,
@@ -410,6 +414,7 @@ module CDNGet
       return {
         name: library,
         site: site_url,
+        info: "#{SITE_URL}\##{library}",
         urls: urls,
         versions: versions,
       }
@@ -430,6 +435,7 @@ module CDNGet
       return {
         name:    d[:name],
         site:    d[:site],
+        info:    "#{SITE_URL}\##{library}",
         urls:    urls,
         files:   files,
         baseurl: baseurl,
@@ -491,6 +497,7 @@ module CDNGet
         desc:      dict["description"],
         tags:      (dict["keywords"] || []).join(", "),
         site:      dict["links"] ? dict["links"]["homepage"] : dict["links"]["npm"],
+        info:      File.join(SITE_URL, "/browse/#{library}/"),
         versions:  versions,
         license:   dict["license"],
       }
@@ -514,6 +521,7 @@ module CDNGet
       dict.update({
         name:     library,
         version:  version,
+        info:     File.join(SITE_URL, "/browse/#{library}@#{version}/"),
         urls:     files.collect {|x| baseurl+x },
         files:    files,
         baseurl:  baseurl,
@@ -700,6 +708,7 @@ END
         s << "desc:     #{d[:desc]}\n" if d[:desc]
         s << "tags:     #{d[:tags]}\n" if d[:tags]
         s << "site:     #{d[:site]}\n" if d[:site]
+        s << "info:     #{d[:info]}\n" if d[:info]
         s << "license:  #{d[:license]}\n" if d[:license]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
         s << "versions:\n"
@@ -725,6 +734,7 @@ END
         s << "desc:     #{d[:desc]}\n" if d[:desc]
         s << "tags:     #{d[:tags]}\n" if d[:tags]
         s << "site:     #{d[:site]}\n" if d[:site]
+        s << "info:     #{d[:info]}\n" if d[:info]
         s << "default:  #{d[:default]}\n" if d[:default]
         s << "license:  #{d[:license]}\n" if d[:license]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]

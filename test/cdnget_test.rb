@@ -227,6 +227,7 @@ name:     jquery
 desc:     JavaScript library for DOM operations
 tags:     jquery, library, ajax, framework, toolkit, popular
 site:     http://jquery.com/
+info:     https://cdnjs.com/libraries/jquery
 license:  MIT
 versions:
 END
@@ -248,6 +249,7 @@ END
       text1 = <<END
 name:     jquery
 site:     http://jquery.com/
+info:     https://developers.google.com/speed/libraries/#jquery
 versions:
 END
       ok {actual}.start_with?(text1)
@@ -270,6 +272,7 @@ name:     jquery
 desc:     JavaScript library for DOM operations
 tags:     jquery, javascript, browser, library
 site:     https://jquery.com
+info:     https://www.jsdelivr.com/package/npm/jquery
 license:  MIT
 versions:
 END
@@ -294,6 +297,7 @@ name:     jquery
 desc:     JavaScript library for DOM operations
 tags:     jquery, javascript, browser, library
 site:     https://jquery.com
+info:     https://unpkg.com/browse/jquery/
 license:  MIT
 versions:
 END
@@ -345,6 +349,7 @@ version:  2.2.0
 desc:     JavaScript library for DOM operations
 tags:     jquery, library, ajax, framework, toolkit, popular
 site:     http://jquery.com/
+info:     https://cdnjs.com/libraries/jquery/2.2.0
 license:  MIT
 urls:
   - https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.js
@@ -360,6 +365,7 @@ END
 name:     jquery
 version:  2.2.0
 site:     http://jquery.com/
+info:     https://developers.google.com/speed/libraries/#jquery
 urls:
   - https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js
 END
@@ -374,6 +380,7 @@ version:  2.2.0
 desc:     JavaScript library for DOM operations
 tags:     jquery, javascript, browser, library
 site:     https://jquery.com
+info:     https://www.jsdelivr.com/package/npm/jquery?version=2.2.0
 default:  /dist/jquery.min.js
 license:  MIT
 urls:
@@ -395,6 +402,7 @@ version:  3.6.0
 desc:     JavaScript library for DOM operations
 tags:     jquery, javascript, browser, library
 site:     https://jquery.com
+info:     https://unpkg.com/browse/jquery@3.6.0/
 default:  /dist/jquery.min.js
 license:  MIT
 urls:
@@ -533,6 +541,7 @@ version:  0.9.12
 desc:     Jcrop is the quick and easy way to add image cropping functionality to your web application.
 tags:     jquery, crop
 site:     http://deepliquid.com/content/Jcrop.html
+info:     https://cdnjs.com/libraries/jquery-jcrop/0.9.12
 license:  MIT
 urls:
   - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/css/Jcrop.gif
@@ -881,6 +890,7 @@ version:  2.2
 desc:     SWFObject is an easy-to-use and standards-friendly method to embed Flash content, which utilizes one small JavaScript file
 tags:     swf, flash
 site:     http://code.google.com/p/swfobject/
+info:     https://cdnjs.com/libraries/swfobject/2.2
 license:  MIT
 urls:
   - https://cdnjs.cloudflare.com/ajax/libs/swfobject/2.2/swfobject.js
@@ -894,6 +904,7 @@ END
 name:     swfobject
 version:  2.2
 site:     https://github.com/swfobject/swfobject
+info:     https://developers.google.com/speed/libraries/#swfobject
 urls:
   - https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js
 END
@@ -906,6 +917,7 @@ name:     swfobject
 version:  2.2.1
 desc:     SWFObject is an easy-to-use and standards-friendly method to embed Flash content, which utilizes one small JavaScript file
 tags:     SWFObject, swf, object, flash, embed, content
+info:     https://www.jsdelivr.com/package/npm/swfobject?version=2.2.1
 default:  /index.min.js
 license:  MIT
 urls:
@@ -927,6 +939,7 @@ version:  2.2.1
 desc:     SWFObject is an easy-to-use and standards-friendly method to embed Flash content, which utilizes one small JavaScript file
 tags:     SWFObject, swf, object, flash, embed, content
 site:     https://github.com/unshiftio/swfobject
+info:     https://unpkg.com/browse/swfobject@2.2.1/
 default:  /index.min.js
 license:  MIT
 urls:
