@@ -1,7 +1,7 @@
 CDNget
 ======
 
-($Release: 1.0.1 $)
+($Release: 1.0.2 $)
 
 CDNget is a utility script to download files from CDNJS, jsDelivr, UNPKG or Google.
 
