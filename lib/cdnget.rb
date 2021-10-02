@@ -114,7 +114,13 @@ module CDNGet
 
     def http_read(http, uri)
       resp = http.send_request('GET', uri.path)
-      return resp.body
+      case resp
+      when Net::HTTPSuccess
+        return resp.body
+      #when HTTPInformation, Net::HTTPRedirection, HTTPClientError, HTTPServerError
+      else
+        raise HttpError, resp.code.to_i, resp.message
+      end
     end
 
     def http_close(http)
@@ -163,6 +169,12 @@ module CDNGet
 
 
   class HttpError < StandardError
+    def initialize(code, msgtext)
+      super("#{code} #{msgtext}")
+      @code = code
+      @msgtext = msgtext
+    end
+    attr_reader :code, :msgtext
   end
 
 
