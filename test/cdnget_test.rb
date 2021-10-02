@@ -1023,6 +1023,28 @@ END
   end
 
 
+  describe "cdnget CDN bulma 0.9.3 dir" do
+
+    before do
+      @tmpdir = "tmpdir1"
+      Dir.mkdir @tmpdir
+    end
+
+    after do
+      FileUtils.rm_rf @tmpdir
+    end
+
+    it "(unpkg) skips '.DS_Store' files." do
+      sout, serr = capture_io do()
+        CDNGet::Main.new("cdnget").run("unpkg", "bulma", "0.9.3", @tmpdir)
+      end
+      ok {sout}.include?("#{@tmpdir}/bulma@0.9.3/sass/.DS_Store ... Skipped\n")
+      ok {sout}.include?("#{@tmpdir}/bulma@0.9.3/sass/base/.DS_Store ... Skipped\n")
+    end
+
+  end
+
+
   describe "cdnget CDN jquery 2.2.0 foo bar" do
 
     it "results in argument error." do
