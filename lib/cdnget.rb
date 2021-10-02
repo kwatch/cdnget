@@ -188,7 +188,7 @@ module CDNGet
   end
 
 
-  class CDNJS < Base    # TODO: use jsdelivr api
+  class CDNJS < Base
     CODE = "cdnjs"
     SITE_URL = 'https://cdnjs.com/'
 
@@ -299,7 +299,7 @@ module CDNGet
   end
 
 
-  class GoogleCDN < Base    # TODO: use jsdelivr api
+  class GoogleCDN < Base
     CODE = "google"
     SITE_URL = 'https://developers.google.com/speed/libraries/'
 
