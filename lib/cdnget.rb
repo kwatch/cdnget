@@ -493,9 +493,9 @@ module CDNGet
     def help_message
       script = @script
       return <<END
-#{script}  -- download files from public CDN
+#{script}  -- download files from public CDN (cdnjs/google/jsdelivr/unpkg)
 
-Usage: #{script} [options] [CDN] [library] [version] [directory]
+Usage: #{script} [<options>] [<CDN> [<library> [<version> [<directory>]]]]
 
 Options:
   -h, --help        : help
@@ -503,11 +503,12 @@ Options:
   -q, --quiet       : minimal output
 
 Example:
-  $ #{script}                                # list public CDN
+  $ #{script}                                # list public CDN names
   $ #{script} [-q] cdnjs                     # list libraries
+  $ #{script} [-q] cdnjs 'jquery*'           # search libraries
   $ #{script} [-q] cdnjs jquery              # list versions
-  $ #{script} [-q] cdnjs jquery 2.2.0        # list files
-  $ #{script} [-q] cdnjs jquery 2.2.0 /tmp   # download files
+  $ #{script} [-q] cdnjs jquery 3.6.0        # list files
+  $ #{script} [-q] cdnjs jquery 3.6.0 /tmp   # download files into directory
 END
     end
 
