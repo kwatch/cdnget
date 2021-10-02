@@ -226,6 +226,8 @@ END
 name:  jquery
 desc:  JavaScript library for DOM operations
 tags:  jquery, library, ajax, framework, toolkit, popular
+site:  http://jquery.com/
+license: MIT
 versions:
 END
       ok {actual}.start_with?(text1)
@@ -342,6 +344,8 @@ name:     jquery
 version:  2.2.0
 desc:     JavaScript library for DOM operations
 tags:     jquery, library, ajax, framework, toolkit, popular
+site:     http://jquery.com/
+license:  MIT
 urls:
   - https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.js
   - https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js
@@ -528,6 +532,8 @@ name:     jquery-jcrop
 version:  0.9.12
 desc:     Jcrop is the quick and easy way to add image cropping functionality to your web application.
 tags:     jquery, crop
+site:     http://deepliquid.com/content/Jcrop.html
+license:  MIT
 urls:
   - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/css/Jcrop.gif
   - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/css/jquery.Jcrop.css

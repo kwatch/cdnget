@@ -243,6 +243,8 @@ module CDNGet
         name: library,
         desc: jdata['description'],
         tags: (jdata['keywords'] || []).join(", "),
+        site: jdata['homepage'],
+        license: jdata['license'],
         versions: versions.reverse(),
       }
     end
@@ -256,12 +258,14 @@ module CDNGet
       baseurl = "https://cdnjs.cloudflare.com/ajax/libs/#{library}/#{version}/"
       return {
         name:     library,
+        version:  version,
         desc:     jdata['description'],
         tags:     (jdata['keywords'] || []).join(", "),
-        version:  version,
+        site:     jdata['homepage'],
         urls:     d['files'].collect {|s| baseurl + s },
         files:    d['files'],
         baseurl:  baseurl,
+        license:  jdata['license'],
       }
     end
 
