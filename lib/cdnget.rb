@@ -32,7 +32,7 @@ module CDNGet
 
   class HttpConnection
 
-    def initialize(uri)
+    def initialize(uri, headers=nil)
       http = Net::HTTP.new(uri.host, uri.port)
       if uri.scheme == 'https'
         http.use_ssl = true
@@ -40,20 +40,37 @@ module CDNGet
       end
       http.start()
       @http = http
+      @headers = headers
     end
 
-    def self.open(uri)
-      return self.new(uri)
+    def self.open(uri, headers=nil)
+      http = self.new(uri, headers)
+      return http unless block_given?()
+      begin
+        return yield http
+      ensure
+        http.close()
+      end
     end
 
-    def read(uri)
-      resp = @http.send_request('GET', uri.path)
+    def get(uri)
+      resp = @http.send_request('GET', uri.path, nil, @headers)
       case resp
       when Net::HTTPSuccess
         return resp.body
       #when HTTPInformation, Net::HTTPRedirection, HTTPClientError, HTTPServerError
       else
-        raise HttpError, resp.code.to_i, resp.message
+        raise HttpError.new(resp.code.to_i, resp.message)
+      end
+    end
+
+    def post(uri, payload)
+      path = uri.path
+      path += "?"+uri.query if uri.query && !uri.query.empty?
+      resp = @http.send_request('POST', path, payload, @headers)
+      case resp
+      when Net::HTTPSuccess ; return resp.body
+      else                  ; raise HttpError.new(resp.code.to_i, resp.message)
       end
     end
 
@@ -129,7 +146,7 @@ module CDNGet
         url = File.join(d[:baseurl], file)   # not use URI.join!
         uri = URI.parse(url)
         http ||= HttpConnection.new(uri)
-        content = http.read(uri)
+        content = http.get(uri)
         content = content.force_encoding('ascii-8bit')
         print " Done (#{format_integer(content.bytesize)} byte)" unless quiet
         FileUtils.mkdir_p(dirpath) unless File.exist?(dirpath)
