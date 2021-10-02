@@ -3,7 +3,7 @@
 ###
 
 RELEASE   = '$Release: 0.0.0 $'.split()[1]
-COPYRIGHT = 'copyright(c) 2016 kuwata-lab.com all rights reserved'
+COPYRIGHT = 'copyright(c) 2016-2021 kuwata-lab.com all rights reserved'
 LICENSE   = 'MIT License'
 
 PROJECT   = 'cdnget'

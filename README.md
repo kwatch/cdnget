@@ -48,6 +48,6 @@ Todo
 Copyright and License
 ---------------------
 
-$Copyright: copyright(c) 2016 kuwata-lab.com all rights reserved $
+$Copyright: copyright(c) 2016-2021 kuwata-lab.com all rights reserved $
 
 $License: MIT License $
