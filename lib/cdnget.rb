@@ -105,7 +105,7 @@ module CDNGet
     end
 
     def search(pattern)
-      #return list().select {|a| File.fnmatch(pattern, a[:name]) }
+      #return list().select {|a| File.fnmatch(pattern, a[:name], File::FNM_CASEFOLD) }
       rexp_str = pattern.split('*', -1).collect {|x| Regexp.escape(x) }.join('.*')
       rexp = Regexp.compile("\\A#{rexp_str}\\z", Regexp::IGNORECASE)
       return list().select {|a| a[:name] =~ rexp }
@@ -461,7 +461,7 @@ module CDNGet
       #arr = jdata["objects"]   # www.npmjs.com
       arr = jdata["results"]    # api.npms.io
       return arr.select {|dict|
-        File.fnmatch(pattern, dict["package"]["name"])
+        File.fnmatch(pattern, dict["package"]["name"], File::FNM_CASEFOLD)
       }.collect {|dict|
         d = dict["package"]
         File.fnmatch(pattern, d["name"]) ? {
