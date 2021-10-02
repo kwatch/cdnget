@@ -6,8 +6,8 @@ Gem::Specification.new do |o|
   o.authors       = ["makoto kuwata"]
   o.email         = ["kwa@kuwata-lab.com"]
 
-  o.summary       = "Utility to download files from CDNJS, jsDelivr or Google."
-  o.description   = "Utility to download files from CDNJS, jsDelivr or Google."
+  o.summary       = "Utility to download files from CDNJS, jsDelivr, UNPKG or Google."
+  o.description   = "Utility to download files from CDNJS, jsDelivr, UNPKG or Google."
   o.homepage      = "https://github.com/kwatch/cdnget/tree/ruby-release"
   o.license       = "MIT"
 

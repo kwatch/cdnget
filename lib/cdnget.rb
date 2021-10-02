@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 ##
-## Download files from CDN (CDNJS, JSDelivr, UNPKG, Google).
+## Download files from CDN (CDNJS, jsDelivr, UNPKG, Google).
 ##
 ## - CDNJS    (https://cdnjs.com/)
-## - JSDelivr (https://www.jsdelivr.com/)
+## - jsDelivr (https://www.jsdelivr.com/)
 ## - UNPKG    (https://unpkg.com/)
 ## - Google   (https://developers.google.com/speed/libraries/)
 ##

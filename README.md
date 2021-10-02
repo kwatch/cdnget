@@ -3,7 +3,7 @@ CDNget
 
 ($Release: 0.0.0 $)
 
-CDNget is a utility script to download files from CDNJS, JSDelivr, UNPKG, or Google.
+CDNget is a utility script to download files from CDNJS, jsDelivr, UNPKG or Google.
 
 
 Install
