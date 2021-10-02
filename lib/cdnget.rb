@@ -24,6 +24,7 @@ require 'net/http'
 require 'openssl'
 require 'json'
 require 'fileutils'
+require 'pp'
 
 
 module CDNGet
@@ -101,6 +102,11 @@ module CDNGet
     def self.inherited(klass)
       CLASSES << klass
     end
+
+    def initialize(debug_mode: false)
+      @debug_mode = debug_mode
+    end
+    attr_reader :debug_mode
 
     def list()
       raise NotImplementedError.new("#{self.class.name}#list(): not implemented yet.")
@@ -204,6 +210,12 @@ module CDNGet
       return value.to_s.reverse.scan(/..?.?/).collect {|s| s.reverse }.reverse.join(',')
     end
 
+    def _debug_print(x)
+      if @debug_mode
+        $stderr.puts "\e[0;35m*** #{PP.pp(x,'')}\e[0m"
+      end
+    end
+
   end
 
 
@@ -231,6 +243,7 @@ module CDNGet
       libs = []
       jstr = fetch("https://api.cdnjs.com/libraries?fields=name,description")
       jdata = JSON.parse(jstr)
+      _debug_print(jdata)
       libs = jdata['results'].collect {|d| {name: d['name'], desc: d['description']} }
       return libs.sort_by {|d| d[:name] }.uniq
     end
@@ -239,6 +252,7 @@ module CDNGet
       validate(library, nil)
       jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
       jdata = JSON.parse(jstr)
+      _debug_print(jdata)
       versions = jdata['assets'].collect {|d| d['version'] }\
                    .sort_by {|v| v.split(/[-.]/).map(&:to_i) }
       return {
@@ -256,6 +270,7 @@ module CDNGet
       validate(library, version)
       jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
       jdata = JSON.parse(jstr)
+      _debug_print(jdata)
       d = jdata['assets'].find {|d| d['version'] == version }  or
         raise CommandError.new("#{library}/#{version}: Library or version not found.")
       baseurl = "https://cdnjs.cloudflare.com/ajax/libs/#{library}/#{version}/"
@@ -303,6 +318,7 @@ module CDNGet
       uri = URI.parse(url)
       json = HttpConnection.open(uri, HEADERS) {|http| http.post(uri, payload) }
       jdata = JSON.load(json)
+      _debug_print(jdata)
       return jdata["hits"].select {|d|
         File.fnmatch(pattern, d["name"], File::FNM_CASEFOLD)
       }.collect {|d|
@@ -320,9 +336,11 @@ module CDNGet
         raise CommandError, "#{library}: Library not found."
       end
       dict1 = JSON.load(json)
+      _debug_print(dict1)
       #
       json = fetch("#{API_URL}/package/npm/#{library}")
       dict2 = JSON.load(json)
+      _debug_print(dict2)
       #
       d = dict1
       return {
@@ -348,6 +366,7 @@ module CDNGet
       jdata   = JSON.load(json)
       files   = jdata["files"].collect {|d| d["name"] }
       baseurl = "https://cdn.jsdelivr.net/npm/#{library}@#{version}"
+      _debug_print(jdata)
       #
       dict = find(library)
       dict.delete(:versions)
@@ -388,6 +407,7 @@ module CDNGet
       #json = fetch("#{API_URL}/search?q=#{pattern}")
       json = fetch("#{API_URL}/search?q=#{pattern}&size=250")
       jdata = JSON.load(json)
+      _debug_print(jdata)
       #arr = jdata["objects"]   # www.npmjs.com
       arr = jdata["results"]    # api.npms.io
       return arr.select {|dict|
@@ -402,11 +422,13 @@ module CDNGet
       validate(library, nil)
       json = fetch("#{API_URL}/package/#{library}", library)
       jdata = JSON.load(json)
+      _debug_print(jdata)
       dict = jdata["collected"]["metadata"]
       versions = [dict["version"]]
       #
       url = File.join(SITE_URL, "/browse/#{library}/")
       html = fetch(url, library)
+      _debug_print(html)
       if html =~ /<script>window.__DATA__\s*=\s*(.*?)<\/script>/m
         jdata2 = JSON.load($1)
         versions = jdata2["availableVersions"].reverse()
@@ -437,6 +459,7 @@ module CDNGet
       jdata   = JSON.load(json)
       files   = jdata["files"].collect {|d| d["name"] }
       baseurl = File.join(SITE_URL, "/#{library}@#{version}")
+      _debug_print(jdata)
       #
       dict.update({
         name:     library,
@@ -461,6 +484,7 @@ module CDNGet
     def list
       libs = []
       html = fetch("https://developers.google.com/speed/libraries/")
+      _debug_print(html)
       rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/([^/]+)/([^/]+)/([^"]+)"`
       html.scan(rexp) do |lib, ver, file|
         libs << {name: lib, desc: "latest version: #{ver}" }
@@ -471,6 +495,7 @@ module CDNGet
     def find(library)
       validate(library, nil)
       html = fetch("https://developers.google.com/speed/libraries/")
+      _debug_print(html)
       rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/#{library}/`
       site_url = nil
       versions = []
@@ -569,6 +594,7 @@ Options:
   -h, --help        : help
   -v, --version     : version
   -q, --quiet       : minimal output
+      --debug       : (debug mode)
 
 Example:
   $ #{script}                                # list public CDN names
@@ -593,10 +619,11 @@ END
     end
 
     def run(*args)
-      cmdopts = parse_cmdopts(args, "hvq", ["help", "version", "quiet"])
+      cmdopts = parse_cmdopts(args, "hvq", ["help", "version", "quiet", "debug"])
       return help_message() if cmdopts['h'] || cmdopts['help']
       return RELEASE + "\n" if cmdopts['v'] || cmdopts['version']
       @quiet = cmdopts['quiet'] || cmdopts['q']
+      @debug_mode = cmdopts['debug']
       #
       validate(args[1], args[2])
       #
@@ -666,7 +693,7 @@ END
     def find_cdn(cdn_code)
       klass = CLASSES.find {|c| c::CODE == cdn_code }  or
         raise CommandError.new("#{cdn_code}: no such CDN.")
-      return klass.new
+      return klass.new(debug_mode: @debug_mode)
     end
 
     def render_list(list)
