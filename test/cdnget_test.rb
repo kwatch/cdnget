@@ -54,8 +54,8 @@ describe CDNGet do
       expected = <<END
 cdnjs       # https://cdnjs.com/
 jsdelivr    # https://www.jsdelivr.com/
-google      # https://developers.google.com/speed/libraries/
 unpkg       # https://unpkg.com/
+google      # https://developers.google.com/speed/libraries/
 #jquery      # https://code.jquery.com/
 #aspnet      # https://www.asp.net/ajax/cdn/
 END

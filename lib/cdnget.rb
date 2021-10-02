@@ -2,18 +2,20 @@
 # -*- coding: utf-8 -*-
 
 ##
-## Download files from CDN (CDNJS, Google, jsDelivr).
+## Download files from CDN (CDNJS, JSDelivr, UNPKG, Google).
 ##
 ## - CDNJS    (https://cdnjs.com/)
+## - JSDelivr (https://www.jsdelivr.com/)
+## - UNPKG    (https://unpkg.com/)
 ## - Google   (https://developers.google.com/speed/libraries/)
-## - jsDelivr (https://www.jsdelivr.com/)
 ##
 ## Example:
 ##  $ cdnget                                # list public CDN
 ##  $ cdnget [-q] cdnjs                     # list libraries
 ##  $ cdnget [-q] cdnjs jquery              # list versions
-##  $ cdnget [-q] cdnjs jquery 2.2.0        # list files
-##  $ cdnget [-q] cdnjs jquery 2.2.0 /tmp   # download files
+##  $ cdnget [-q] cdnjs jquery latest       # detect latest version
+##  $ cdnget [-q] cdnjs jquery 3.6.0        # list files
+##  $ cdnget [-q] cdnjs jquery 3.6.0 /tmp   # download files
 ##
 
 require 'open-uri'
@@ -364,88 +366,6 @@ module CDNGet
   end
 
 
-  class GoogleCDN < Base
-    CODE = "google"
-    SITE_URL = 'https://developers.google.com/speed/libraries/'
-
-    def list
-      libs = []
-      html = fetch("https://developers.google.com/speed/libraries/")
-      rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/([^/]+)/([^/]+)/([^"]+)"`
-      html.scan(rexp) do |lib, ver, file|
-        libs << {name: lib, desc: "latest version: #{ver}" }
-      end
-      return libs.sort_by {|d| d[:name] }.uniq
-    end
-
-    def find(library)
-      validate(library, nil)
-      html = fetch("https://developers.google.com/speed/libraries/")
-      rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/#{library}/`
-      site_url = nil
-      versions = []
-      urls = []
-      found = false
-      html.scan(/<h3\b.*?>.*?<\/h3>\s*<dl>(.*?)<\/dl>/m) do |text,|
-        if text =~ rexp
-          found = true
-          if text =~ /<dt>.*?snippet:<\/dt>\s*<dd>(.*?)<\/dd>/m
-            s = $1
-            s.scan(/\b(?:src|href)="([^"]*?)"/) do |href,|
-              urls << href
-            end
-          end
-          if text =~ /<dt>site:<\/dt>\s*<dd>(.*?)<\/dd>/m
-            s = $1
-            if s =~ %r`href="([^"]+)"`
-              site_url = $1
-            end
-          end
-          text.scan(/<dt>(?:stable |unstable )?versions:<\/dt>\s*<dd\b.*?>(.*?)<\/dd>/m) do
-            s = $1
-            vers = s.split(/,/).collect {|x| x.strip() }
-            versions.concat(vers)
-          end
-          break
-        end
-      end
-      found  or
-        raise CommandError.new("#{library}: Library not found.")
-      return {
-        name: library,
-        site: site_url,
-        info: "#{SITE_URL}\##{library}",
-        urls: urls,
-        versions: versions,
-      }
-    end
-
-    def get(library, version)
-      validate(library, version)
-      d = find(library)
-      d[:versions].find(version)  or
-        raise CommandError.new("#{version}: No such version of #{library}.")
-      urls = d[:urls]
-      if urls
-        rexp = /(\/libs\/#{library})\/[^\/]+/
-        urls = urls.collect {|x| x.gsub(rexp, "\\1/#{version}") }
-      end
-      baseurl = "https://ajax.googleapis.com/ajax/libs/#{library}/#{version}"
-      files = urls ? urls.collect {|x| x[baseurl.length..-1] } : nil
-      return {
-        name:    d[:name],
-        site:    d[:site],
-        info:    "#{SITE_URL}\##{library}",
-        urls:    urls,
-        files:   files,
-        baseurl: baseurl,
-        version: version,
-      }
-    end
-
-  end
-
-
   class Unpkg < Base
     CODE = "unpkg"
     SITE_URL = "https://unpkg.com/"
@@ -534,6 +454,88 @@ module CDNGet
   end
 
 
+  class GoogleCDN < Base
+    CODE = "google"
+    SITE_URL = 'https://developers.google.com/speed/libraries/'
+
+    def list
+      libs = []
+      html = fetch("https://developers.google.com/speed/libraries/")
+      rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/([^/]+)/([^/]+)/([^"]+)"`
+      html.scan(rexp) do |lib, ver, file|
+        libs << {name: lib, desc: "latest version: #{ver}" }
+      end
+      return libs.sort_by {|d| d[:name] }.uniq
+    end
+
+    def find(library)
+      validate(library, nil)
+      html = fetch("https://developers.google.com/speed/libraries/")
+      rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/#{library}/`
+      site_url = nil
+      versions = []
+      urls = []
+      found = false
+      html.scan(/<h3\b.*?>.*?<\/h3>\s*<dl>(.*?)<\/dl>/m) do |text,|
+        if text =~ rexp
+          found = true
+          if text =~ /<dt>.*?snippet:<\/dt>\s*<dd>(.*?)<\/dd>/m
+            s = $1
+            s.scan(/\b(?:src|href)="([^"]*?)"/) do |href,|
+              urls << href
+            end
+          end
+          if text =~ /<dt>site:<\/dt>\s*<dd>(.*?)<\/dd>/m
+            s = $1
+            if s =~ %r`href="([^"]+)"`
+              site_url = $1
+            end
+          end
+          text.scan(/<dt>(?:stable |unstable )?versions:<\/dt>\s*<dd\b.*?>(.*?)<\/dd>/m) do
+            s = $1
+            vers = s.split(/,/).collect {|x| x.strip() }
+            versions.concat(vers)
+          end
+          break
+        end
+      end
+      found  or
+        raise CommandError.new("#{library}: Library not found.")
+      return {
+        name: library,
+        site: site_url,
+        info: "#{SITE_URL}\##{library}",
+        urls: urls,
+        versions: versions,
+      }
+    end
+
+    def get(library, version)
+      validate(library, version)
+      d = find(library)
+      d[:versions].find(version)  or
+        raise CommandError.new("#{version}: No such version of #{library}.")
+      urls = d[:urls]
+      if urls
+        rexp = /(\/libs\/#{library})\/[^\/]+/
+        urls = urls.collect {|x| x.gsub(rexp, "\\1/#{version}") }
+      end
+      baseurl = "https://ajax.googleapis.com/ajax/libs/#{library}/#{version}"
+      files = urls ? urls.collect {|x| x[baseurl.length..-1] } : nil
+      return {
+        name:    d[:name],
+        site:    d[:site],
+        info:    "#{SITE_URL}\##{library}",
+        urls:    urls,
+        files:   files,
+        baseurl: baseurl,
+        version: version,
+      }
+    end
+
+  end
+
+
   #class JQueryCDN < Base
   #  CODE = "jquery"
   #  SITE_URL = 'https://code.jquery.com/'
@@ -559,7 +561,7 @@ module CDNGet
     def help_message
       script = @script
       return <<END
-#{script}  -- download files from public CDN (cdnjs/google/jsdelivr/unpkg)
+#{script}  -- download files from public CDN (cdnjs/jsdelivr/unpkg/google)
 
 Usage: #{script} [<options>] [<CDN> [<library> [<version> [<directory>]]]]
 
