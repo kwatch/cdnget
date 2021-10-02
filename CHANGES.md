@@ -2,6 +2,21 @@ Changes
 =======
 
 
+Release 1.0.0 (2021-10-02)
+---------------------------
+
+* Download performance improved.
+* New CDN `unpkg` supported.
+* Change `jsdelivr` CDN to use new jsdelivr API.
+* Detect latest version of JS library automatically when `latest` keyword specified as version.
+* Increase output information of JS library.
+  - license
+  - tags
+  - page url on CDN web site
+  - url of npm package (`*.tgz`)
+* Add '--debug' option.
+
+
 Release 0.3.1 (2021-09-30)
 ---------------------------
 
