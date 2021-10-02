@@ -18,6 +18,8 @@
 
 require 'open-uri'
 require 'uri'
+require 'net/http'
+require 'openssl'
 require 'json'
 require 'fileutils'
 
@@ -64,6 +66,7 @@ module CDNGet
       d = get(library, version)
       target_dir = d[:destdir] ? File.join(basedir, d[:destdir]) \
                                : File.join(basedir, library, version)
+      http = nil
       d[:files].each do |file|
         filepath = File.join(target_dir, file)
         if filepath.end_with?('/')
@@ -79,7 +82,9 @@ module CDNGet
         dirpath  = File.dirname(filepath)
         print "#{filepath} ..." unless quiet
         url = File.join(d[:baseurl], file)   # not use URI.join!
-        content = fetch(url)
+        uri = URI.parse(url)
+        http ||= http_open(uri)
+        content = http_read(http, uri)
         content = content.force_encoding('ascii-8bit')
         print " Done (#{format_integer(content.bytesize)} byte)" unless quiet
         FileUtils.mkdir_p(dirpath) unless File.exist?(dirpath)
@@ -91,10 +96,30 @@ module CDNGet
         end
         puts() unless quiet
       end
+      http_close(http)
       nil
     end
 
     protected
+
+    def http_open(uri)
+      http = Net::HTTP.new(uri.host, uri.port)
+      if uri.scheme == 'https'
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      end
+      http.start()
+      return http
+    end
+
+    def http_read(http, uri)
+      resp = http.send_request('GET', uri.path)
+      return resp.body
+    end
+
+    def http_close(http)
+      http.finish()
+    end
 
     def http_get(url)
       ## * `open()` on Ruby 3.X can't open http url
