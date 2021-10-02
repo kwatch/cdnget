@@ -493,33 +493,38 @@ module CDNGet
         #versions: jdata["packument"]["versions"].collect {|d| d["version"] },
         name:      dict["name"],
         desc:      dict["description"],
+        tags:      (dict["keywords"] || []).join(", "),
         site:      dict["links"] ? dict["links"]["homepage"] : dict["links"]["npm"],
-        version:   dict["version"],
         versions:  versions,
+        license:   dict["license"],
       }
     end
 
     def get(library, version)
       validate(library, version)
-      url  = File.join(SITE_URL, "/browse/#{library}@#{version}/")
-      html = fetch(url, library)
-      html =~ /<script>window.__DATA__\s*=\s*(.*?)<\/script>/m  or
-        raise CommandError.new("#{library}: failed to fetch data.")
-      jdata = JSON.load($1)
-      files = jdata["target"]["details"].collect {|key, val|
-        path = val["path"]
-        path += "/" if val["type"] == "directory"
-        path
-      }
+      dict = find(library)
+      dict.delete(:versions)
+      #
+      url = "https://data.jsdelivr.com/v1/package/npm/#{library}@#{version}/flat"
+      begin
+        json = fetch(url, library)
+      rescue CommandError
+        raise CommandError.new("#{library}@#{version}: Library or version not found.")
+      end
+      jdata   = JSON.load(json)
+      files   = jdata["files"].collect {|d| d["name"] }
       baseurl = File.join(SITE_URL, "/#{library}@#{version}")
-      return {
+      #
+      dict.update({
         name:     library,
         version:  version,
-        destdir:  "#{library}@#{version}",
         urls:     files.collect {|x| baseurl+x },
         files:    files,
         baseurl:  baseurl,
-      }
+        default:  jdata["default"],
+        destdir:  "#{library}@#{version}",
+      })
+      return dict
     end
 
   end
