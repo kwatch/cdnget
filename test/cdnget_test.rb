@@ -84,10 +84,10 @@ END
     end
 
     it "(jsdelivr) lists librareis." do
-      actual = CDNGet::Main.new().run("jsdelivr")
-      ok {actual} =~ /^jquery /
-      ok {actual} =~ /^angularjs /
-      ok {actual} =~ /^bootstrap /
+      exc = assert_raises(CDNGet::CommandError) do
+        actual = CDNGet::Main.new().run("jsdelivr")
+      end
+      ok {exc.message} == "jsdelivr: cannot list libraries; please specify pattern such as 'jquery*'."
     end
 
     it "(unpkg) lists librareis." do
@@ -122,7 +122,7 @@ END
     it "(jsdelivr) lists libraries starting to pattern." do
       actual = CDNGet::Main.new().run("jsdelivr", "jquery*")
       ok {actual} =~ /^jquery                #/
-      ok {actual} =~ /^jquery\.ui             #/   # match
+      ok {actual} =~ /^jquery-datepicker     #/   # match
       ok {actual} !~ /^angularjs/
       ok {actual} !~ /^bootstrap/
     end
@@ -131,7 +131,7 @@ END
       actual = CDNGet::Main.new().run("unpkg", "jquery*")
       ok {actual} =~ /^jquery                #/
       ok {actual} =~ /^jquery-ui             #/   # match
-      ok {actual} !~ /^angularjs/
+      ok {actual} !~ /^jquery\.ui /
       ok {actual} !~ /^bootstrap/
     end
 
@@ -160,7 +160,7 @@ END
     it "(jsdelivr) lists libraries ending to pattern." do
       actual = CDNGet::Main.new().run("jsdelivr", "*jquery")
       ok {actual} =~ /^jquery                #/
-      ok {actual} !~ /^jquery\.ui             #/   # not match
+      ok {actual} !~ /^jquery-datepicker /        # not match
       ok {actual} !~ /^angularjs/
       ok {actual} !~ /^bootstrap/
     end
@@ -199,10 +199,10 @@ END
     it "(jsdelivr) lists libraries including pattern." do
       actual = CDNGet::Main.new().run("jsdelivr", "*jquery*")
       ok {actual} =~ /^jquery /
-      ok {actual} =~ /^jasmine\.jquery /
-      ok {actual} =~ /^jquery\.zoom /
+      ok {actual} =~ /^jasmine-jquery /
+      ok {actual} =~ /^jquery-form /
       ok {actual} !~ /^angularjs/
-      ok {actual} !~ /^bootstrap/
+      ok {actual} !~ /^react/
     end
 
     it "(unpkg) lists libraries including pattern." do
@@ -265,17 +265,20 @@ END
       actual = CDNGet::Main.new().run("jsdelivr", "jquery")
       text1 = <<END
 name:  jquery
-desc:  jQuery is a fast and concise JavaScript Library that simplifies HTML document traversing, event handling, animating, and Ajax interactions for rapid web development. jQuery is designed to change the way that you write JavaScript.
-site:  http://jquery.com/
+desc:  JavaScript library for DOM operations
+tags:  jquery, javascript, browser, library
+site:  https://jquery.com
+license: MIT
 versions:
 END
       ok {actual}.start_with?(text1)
       text2 = <<END
+  - 1.8.2
+  - 1.7.3
   - 1.7.2
-  - 1.7.1
-  - 1.7
+  - 1.6.3
+  - 1.6.2
   - 1.5.1
-  - 1.4.4
 END
       ok {actual}.end_with?(text2)
       ok {actual} =~ /^  - 2\.2\.0$/
@@ -317,8 +320,8 @@ END
     end
 
     it "(jsdelivr) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("google", "jquery-ui") }
-      ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
+      pr = proc { CDNGet::Main.new().run("jsdelivr", "jquery-foobar") }
+      ok {pr}.raise?(CDNGet::CommandError, "jquery-foobar: Library not found.")
     end
 
     it "(unpkg) raises error when library name is wrong." do
@@ -362,13 +365,21 @@ END
       expected = <<END
 name:     jquery
 version:  2.2.0
+desc:     JavaScript library for DOM operations
+tags:     jquery, javascript, browser, library
+site:     https://jquery.com
+default:  /dist/jquery.min.js
+license:  MIT
 urls:
-  - https://cdn.jsdelivr.net/jquery/2.2.0/jquery.js
-  - https://cdn.jsdelivr.net/jquery/2.2.0/jquery.min.js
-  - https://cdn.jsdelivr.net/jquery/2.2.0/jquery.min.map
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.0/AUTHORS.txt
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.0/bower.json
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.0/dist/jquery.js
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.0/dist/jquery.min.js
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.0/dist/jquery.min.map
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.0/LICENSE.txt
 END
       actual = CDNGet::Main.new().run("jsdelivr", "jquery", "2.2.0")
-      ok {actual} == expected
+      ok {actual}.start_with?(expected)
     end
 
     it "(unpkg) lists files." do
@@ -428,7 +439,7 @@ END
 
     it "(jsdelivr) raises error when library name is wrong." do
       pr = proc { CDNGet::Main.new().run("jsdelivr", "jquery-ui", "1.9.2") }
-      ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
+      ok {pr}.raise?(CDNGet::CommandError, "jquery-ui@1.9.2: Library or version not found.")
     end
 
     it "(unpkg) raises error when library name is wrong." do
@@ -512,14 +523,24 @@ END
     end
 
     it "(jsdelivr) downloads files into dir." do
-      _do_download_test1("jsdelivr", "jquery", "2.2.0") do |tmpdir, sout, serr|
-        ok {"#{tmpdir}/jquery/2.2.0/jquery.js"}.file_exist?
-        ok {"#{tmpdir}/jquery/2.2.0/jquery.min.js"}.file_exist?
-        ok {"#{tmpdir}/jquery/2.2.0/jquery.min.map"}.file_exist?
+      _do_download_test1("jsdelivr", "chibijs", "3.0.9") do |tmpdir, sout, serr|
+        ok {"#{tmpdir}/chibijs@3.0.9/.jshintrc"        }.file_exist?
+        ok {"#{tmpdir}/chibijs@3.0.9/.npmignore"       }.file_exist?
+        ok {"#{tmpdir}/chibijs@3.0.9/chibi.js"         }.file_exist?
+        ok {"#{tmpdir}/chibijs@3.0.9/chibi-min.js"     }.file_exist?
+        ok {"#{tmpdir}/chibijs@3.0.9/gulpfile.js"      }.file_exist?
+        ok {"#{tmpdir}/chibijs@3.0.9/package.json"     }.file_exist?
+        ok {"#{tmpdir}/chibijs@3.0.9/README.md"        }.file_exist?
+        ok {"#{tmpdir}/chibijs@3.0.9/tests/runner.html"}.file_exist?
         ok {sout} == <<END
-#{tmpdir}/jquery/2.2.0/jquery.js ... Done (258,388 byte)
-#{tmpdir}/jquery/2.2.0/jquery.min.js ... Done (85,589 byte)
-#{tmpdir}/jquery/2.2.0/jquery.min.map ... Done (129,544 byte)
+#{tmpdir}/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
+#{tmpdir}/chibijs@3.0.9/.npmignore ... Done (46 byte)
+#{tmpdir}/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
+#{tmpdir}/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
+#{tmpdir}/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
+#{tmpdir}/chibijs@3.0.9/package.json ... Done (756 byte)
+#{tmpdir}/chibijs@3.0.9/README.md ... Done (21,283 byte)
+#{tmpdir}/chibijs@3.0.9/tests/runner.html ... Done (14,302 byte)
 END
       end
     end
@@ -570,14 +591,52 @@ END
     end
 
     it "(jsdelivr) downloads files (containing subdir) into dir." do
-      _do_download_test2("jsdelivr", "jquery.lightslider", "1.1.1") do |tmpdir, sout, serr|
-        ok {"#{tmpdir}/jquery.lightslider/1.1.1/css/jquery.lightslider.min.css"}.file_exist?
-        ok {"#{tmpdir}/jquery.lightslider/1.1.1/img/controls.png"}.file_exist?
-        ok {"#{tmpdir}/jquery.lightslider/1.1.1/js/jquery.lightslider.min.js"}.file_exist?
+      _do_download_test2("jsdelivr", "zepto", "1.2.0") do |tmpdir, sout, serr|
+        ok {"#{tmpdir}/zepto@1.2.0/dist/zepto.js"    }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/dist/zepto.min.js"}.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/MIT-LICENSE"      }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/package.json"     }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/README.md"        }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/ajax.js"      }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/assets.js"    }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/callbacks.js" }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/data.js"      }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/deferred.js"  }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/detect.js"    }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/event.js"     }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/form.js"      }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/fx.js"        }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/fx_methods.js"}.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/gesture.js"   }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/ie.js"        }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/ios3.js"      }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/selector.js"  }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/stack.js"     }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/touch.js"     }.file_exist?
+        ok {"#{tmpdir}/zepto@1.2.0/src/zepto.js"     }.file_exist?
         ok {sout} == <<END
-#{tmpdir}/jquery.lightslider/1.1.1/css/jquery.lightslider.min.css ... Done (5,060 byte)
-#{tmpdir}/jquery.lightslider/1.1.1/img/controls.png ... Done (2,195 byte)
-#{tmpdir}/jquery.lightslider/1.1.1/js/jquery.lightslider.min.js ... Done (10,359 byte)
+#{tmpdir}/zepto@1.2.0/dist/zepto.js ... Done (58,707 byte)
+#{tmpdir}/zepto@1.2.0/dist/zepto.min.js ... Done (26,386 byte)
+#{tmpdir}/zepto@1.2.0/MIT-LICENSE ... Done (1,081 byte)
+#{tmpdir}/zepto@1.2.0/package.json ... Done (435 byte)
+#{tmpdir}/zepto@1.2.0/README.md ... Done (6,711 byte)
+#{tmpdir}/zepto@1.2.0/src/ajax.js ... Done (13,843 byte)
+#{tmpdir}/zepto@1.2.0/src/assets.js ... Done (581 byte)
+#{tmpdir}/zepto@1.2.0/src/callbacks.js ... Done (4,208 byte)
+#{tmpdir}/zepto@1.2.0/src/data.js ... Done (2,789 byte)
+#{tmpdir}/zepto@1.2.0/src/deferred.js ... Done (3,846 byte)
+#{tmpdir}/zepto@1.2.0/src/detect.js ... Done (3,754 byte)
+#{tmpdir}/zepto@1.2.0/src/event.js ... Done (9,546 byte)
+#{tmpdir}/zepto@1.2.0/src/form.js ... Done (1,253 byte)
+#{tmpdir}/zepto@1.2.0/src/fx.js ... Done (4,843 byte)
+#{tmpdir}/zepto@1.2.0/src/fx_methods.js ... Done (2,102 byte)
+#{tmpdir}/zepto@1.2.0/src/gesture.js ... Done (1,138 byte)
+#{tmpdir}/zepto@1.2.0/src/ie.js ... Done (530 byte)
+#{tmpdir}/zepto@1.2.0/src/ios3.js ... Done (1,140 byte)
+#{tmpdir}/zepto@1.2.0/src/selector.js ... Done (3,187 byte)
+#{tmpdir}/zepto@1.2.0/src/stack.js ... Done (560 byte)
+#{tmpdir}/zepto@1.2.0/src/touch.js ... Done (6,067 byte)
+#{tmpdir}/zepto@1.2.0/src/zepto.js ... Done (33,889 byte)
 END
       end
     end
@@ -631,12 +690,16 @@ END
     it "(jsdelivr) doesn't override existing files when they are identical to downloaded files." do
       tmpdir = "tmpdir1"
       expected = <<END
-#{tmpdir}/jquery.imagefill/0.1/css/grid.css ... Done (5,436 byte)
-#{tmpdir}/jquery.imagefill/0.1/css/main.css ... Done (5,837 byte)
-#{tmpdir}/jquery.imagefill/0.1/img/fill-icon.png ... Done (1,530 byte)
-#{tmpdir}/jquery.imagefill/0.1/js/jquery-imagefill.js ... Done (2,717 byte)
+#{tmpdir}/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
+#{tmpdir}/chibijs@3.0.9/.npmignore ... Done (46 byte)
+#{tmpdir}/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
+#{tmpdir}/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
+#{tmpdir}/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
+#{tmpdir}/chibijs@3.0.9/package.json ... Done (756 byte)
+#{tmpdir}/chibijs@3.0.9/README.md ... Done (21,283 byte)
+#{tmpdir}/chibijs@3.0.9/tests/runner.html ... Done (14,302 byte)
 END
-      _do_download_test3("jsdelivr", "jquery.imagefill", "0.1", expected)
+      _do_download_test3("jsdelivr", "chibijs", "3.0.9", expected)
     end
 
     it "(unpkg) doesn't override existing files when they are identical to downloaded files." do
