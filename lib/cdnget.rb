@@ -271,46 +271,86 @@ module CDNGet
   class JSDelivr < Base
     CODE = "jsdelivr"
     SITE_URL = "https://www.jsdelivr.com/"
-    API_URL  = "https://api.jsdelivr.com/v1/jsdelivr/libraries"
+    #API_URL  = "https://api.jsdelivr.com/v1/jsdelivr/libraries"
+    API_URL  = "https://data.jsdelivr.com/v1"
+    HEADERS = {
+      "x-algo""lia-app""lication-id"=>"OFCNC""OG2CU",
+      "x-algo""lia-api""-key"=>"f54e21fa3a2""a0160595bb05""8179bfb1e",
+    }
 
     def list
-      json = fetch("#{API_URL}?fields=name,description,homepage")
-      arr = JSON.load(json)
-      return arr.collect {|d|
-        {name: d["name"], desc: d["description"], site: d["homepage"] }
+      return nil
+    end
+
+    def search(pattern)
+      form_data = {
+        query:        pattern,
+        page:         "0",
+        hitsPerPage:  "1000",
+        attributesToHighlight: '[]',
+        attributesToRetrieve:  '["name","description","version"]'
+      }
+      payload = JSON.dump({"params"=>URI.encode_www_form(form_data)})
+      url = "https://ofcncog2cu-3.algolianet.com/1/indexes/npm-search/query"
+      uri = URI.parse(url)
+      json = HttpConnection.open(uri, HEADERS) {|http| http.post(uri, payload) }
+      jdata = JSON.load(json)
+      return jdata["hits"].select {|d|
+        File.fnmatch(pattern, d["name"], File::FNM_CASEFOLD)
+      }.collect {|d|
+        {name: d["name"], desc: d["description"], version: d["version"]}
       }
     end
 
     def find(library)
       validate(library, nil)
-      json = fetch("#{API_URL}?name=#{library}&fields=name,description,homepage,versions")
-      arr = JSON.load(json)
-      d = arr.first  or
-        raise CommandError.new("#{library}: Library not found.")
+      url = "https://ofcncog2cu-dsn.algolia.net/1/indexes/npm-search/#{library}"
+      uri = URI.parse(url)
+      begin
+        json = HttpConnection.open(uri, HEADERS) {|http| http.get(uri) }
+      rescue HttpError
+        raise CommandError, "#{library}: Library not found."
+      end
+      dict1 = JSON.load(json)
+      #
+      json = fetch("#{API_URL}/package/npm/#{library}")
+      dict2 = JSON.load(json)
+      #
+      d = dict1
       return {
-        name:     d['name'],
-        desc:     d['description'],
-        site:     d['homepage'],
-        versions: d['versions'],
+        name:      d['name'],
+        desc:      d['description'],
+        #versions: d['versions'].collect {|k,v| k },
+        versions:  dict2['versions'],
+        tags:      (d['keywords'] || []).join(", "),
+        site:      d['homepage'],
+        license:   d['license'],
       }
     end
 
     def get(library, version)
       validate(library, version)
-      baseurl = "https://cdn.jsdelivr.net/#{library}/#{version}"
-      url = "#{API_URL}/#{library}/#{version}"
-      json  = fetch("#{API_URL}/#{library}/#{version}")
-      files = JSON.load(json)
-      ! files.empty?  or
-        raise CommandError.new("#{library}: Library not found.")
-      urls  = files.collect {|x| "#{baseurl}/#{x}" }
-      return {
-        name:     library,
-        version:  version,
-        urls:     urls,
-        files:    files,
-        baseurl:  baseurl,
-      }
+      url = File.join(API_URL, "/package/npm/#{library}@#{version}/flat")
+      begin
+        json = fetch(url, library)
+      rescue CommandError
+        raise CommandError.new("#{library}@#{version}: Library or version not found.")
+      end
+      jdata   = JSON.load(json)
+      files   = jdata["files"].collect {|d| d["name"] }
+      baseurl = "https://cdn.jsdelivr.net/npm/#{library}@#{version}"
+      #
+      dict = find(library)
+      dict.delete(:versions)
+      dict.update({
+        version: version,
+        urls:    files.collect {|x| baseurl + x },
+        files:   files,
+        baseurl: baseurl,
+        default: jdata["default"],
+        destdir: "#{library}@#{version}",
+      })
+      return dict
     end
 
   end
@@ -657,6 +697,7 @@ END
         s << "desc:  #{d[:desc]}\n" if d[:desc]
         s << "tags:  #{d[:tags]}\n" if d[:tags]
         s << "site:  #{d[:site]}\n" if d[:site]
+        s << "license: #{d[:license]}\n" if d[:license]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
         s << "versions:\n"
         d[:versions].each do |ver|
@@ -680,6 +721,8 @@ END
         s << "desc:     #{d[:desc]}\n" if d[:desc]
         s << "tags:     #{d[:tags]}\n" if d[:tags]
         s << "site:     #{d[:site]}\n" if d[:site]
+        s << "default:  #{d[:default]}\n" if d[:default]
+        s << "license:  #{d[:license]}\n" if d[:license]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
         s << "urls:\n"  if d[:urls]
         d[:urls].each do |url|
