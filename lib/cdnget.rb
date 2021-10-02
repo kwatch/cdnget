@@ -464,11 +464,7 @@ module CDNGet
         File.fnmatch(pattern, dict["package"]["name"], File::FNM_CASEFOLD)
       }.collect {|dict|
         d = dict["package"]
-        File.fnmatch(pattern, d["name"]) ? {
-          name:    d["name"],
-          desc:    d["description"],
-          version: d["version"],
-        } : nil
+        {name: d["name"], desc: d["description"], version: d["version"]}
       }
     end
 
@@ -487,10 +483,6 @@ module CDNGet
       end
       #
       return {
-        #name:     jdata["capsule"]["name"],
-        #desc:     jdata["capsule"]["description"],
-        #site:     jdata["packageVersion"]["homepage"],
-        #versions: jdata["packument"]["versions"].collect {|d| d["version"] },
         name:      dict["name"],
         desc:      dict["description"],
         tags:      (dict["keywords"] || []).join(", "),
