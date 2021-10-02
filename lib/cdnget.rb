@@ -694,11 +694,11 @@ END
           s << "#{ver}\n"
         end if d[:versions]
       else
-        s << "name:  #{d[:name]}\n"
-        s << "desc:  #{d[:desc]}\n" if d[:desc]
-        s << "tags:  #{d[:tags]}\n" if d[:tags]
-        s << "site:  #{d[:site]}\n" if d[:site]
-        s << "license: #{d[:license]}\n" if d[:license]
+        s << "name:     #{d[:name]}\n"
+        s << "desc:     #{d[:desc]}\n" if d[:desc]
+        s << "tags:     #{d[:tags]}\n" if d[:tags]
+        s << "site:     #{d[:site]}\n" if d[:site]
+        s << "license:  #{d[:license]}\n" if d[:license]
         s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
         s << "versions:\n"
         d[:versions].each do |ver|

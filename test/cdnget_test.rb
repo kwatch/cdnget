@@ -223,11 +223,11 @@ END
     it "(cdnjs) lists versions of library." do
       actual = CDNGet::Main.new().run("cdnjs", "jquery")
       text1 = <<END
-name:  jquery
-desc:  JavaScript library for DOM operations
-tags:  jquery, library, ajax, framework, toolkit, popular
-site:  http://jquery.com/
-license: MIT
+name:     jquery
+desc:     JavaScript library for DOM operations
+tags:     jquery, library, ajax, framework, toolkit, popular
+site:     http://jquery.com/
+license:  MIT
 versions:
 END
       ok {actual}.start_with?(text1)
@@ -246,8 +246,8 @@ END
     it "(google) lists versions of library." do
       actual = CDNGet::Main.new().run("google", "jquery")
       text1 = <<END
-name:  jquery
-site:  http://jquery.com/
+name:     jquery
+site:     http://jquery.com/
 versions:
 END
       ok {actual}.start_with?(text1)
@@ -266,11 +266,11 @@ END
     it "(jsdelivr) lists versions of library." do
       actual = CDNGet::Main.new().run("jsdelivr", "jquery")
       text1 = <<END
-name:  jquery
-desc:  JavaScript library for DOM operations
-tags:  jquery, javascript, browser, library
-site:  https://jquery.com
-license: MIT
+name:     jquery
+desc:     JavaScript library for DOM operations
+tags:     jquery, javascript, browser, library
+site:     https://jquery.com
+license:  MIT
 versions:
 END
       ok {actual}.start_with?(text1)
@@ -290,11 +290,11 @@ END
     it "(unpkg) lists versions of library." do
       actual = CDNGet::Main.new().run("unpkg", "jquery")
       text1 = <<END
-name:  jquery
-desc:  JavaScript library for DOM operations
-tags:  jquery, javascript, browser, library
-site:  https://jquery.com
-license: MIT
+name:     jquery
+desc:     JavaScript library for DOM operations
+tags:     jquery, javascript, browser, library
+site:     https://jquery.com
+license:  MIT
 versions:
 END
       ok {actual}.start_with?(text1)
