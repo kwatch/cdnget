@@ -113,10 +113,10 @@ module CDNGet
     end
 
     def search(pattern)
-      #return list().select {|a| File.fnmatch(pattern, a[:name], File::FNM_CASEFOLD) }
-      rexp_str = pattern.split('*', -1).collect {|x| Regexp.escape(x) }.join('.*')
-      rexp = Regexp.compile("\\A#{rexp_str}\\z", Regexp::IGNORECASE)
-      return list().select {|a| a[:name] =~ rexp }
+      return list().select {|d| File.fnmatch(pattern, d[:name], File::FNM_CASEFOLD) }
+      #rexp_str = pattern.split('*', -1).collect {|x| Regexp.escape(x) }.join('.*')
+      #rexp = Regexp.compile("\\A#{rexp_str}\\z", Regexp::IGNORECASE)
+      #return list().select {|d| d[:name] =~ rexp }
     end
 
     def find(library)
