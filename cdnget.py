@@ -133,6 +133,8 @@ class CDNJS(Base):
     def find(self, library):
         self.validate(library, None)
         jstr = self.fetch("%s/%s" % (self.API_URL, library))
+        if jstr is None:
+            return None
         jdata = json.loads(S(jstr))
         if jdata == {}:
             return None
