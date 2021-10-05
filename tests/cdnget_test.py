@@ -161,7 +161,7 @@ urls:
             ok ("./test.d/lib1/jquery/2.2.4/jquery.min.js").is_file()
             ok ("./test.d/lib1/jquery/2.2.4/jquery.min.map").is_file()
             from glob import glob
-            ok (glob("./test.d/lib1/jquery/2.2.4/*")) == [
+            ok (sorted(glob("./test.d/lib1/jquery/2.2.4/*"))) == [
               "./test.d/lib1/jquery/2.2.4/jquery.js",
               "./test.d/lib1/jquery/2.2.4/jquery.min.js",
               "./test.d/lib1/jquery/2.2.4/jquery.min.map",
@@ -256,7 +256,7 @@ urls:
             ok ("./test.d/lib2/jquery/2.2.4/jquery.min.js").is_file()
             ok ("./test.d/lib2/jquery/2.2.4/jquery.min.map").is_file()
             from glob import glob
-            ok (glob("./test.d/lib2/jquery/2.2.4/*")) == [
+            ok (sorted(glob("./test.d/lib2/jquery/2.2.4/*"))) == [
               "./test.d/lib2/jquery/2.2.4/jquery.js",
               "./test.d/lib2/jquery/2.2.4/jquery.min.js",
               "./test.d/lib2/jquery/2.2.4/jquery.min.map",
@@ -299,8 +299,10 @@ urls:
                 ok (line).matches(r'^\w+([-.]\w+)* *\# latest version: r?\d+(\.\d+)*$')
                 libs.append(line.split(' ')[0])
             s = r"""
-angular_material
-angularjs
+#angular_material
+#angularjs
+cesiumjs
+d3js
 dojo
 ext-core
 hammerjs
@@ -310,15 +312,20 @@ jquery
 jquery
 jquerymobile
 jqueryui
+material-motion
 mootools
+myanmar-tools
 prototype
 scriptaculous
+shaka-player
 spf
 swfobject
 threejs
 webfont
 """[1:-1]
             for x in s.split("\n"):
+                if x.startswith('#'):
+                    continue
                 ok (libs).contains(x)
 
         @test("cdnget google <library>")
