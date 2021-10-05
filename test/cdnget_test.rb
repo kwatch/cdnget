@@ -591,31 +591,33 @@ END
 
   describe "cdnget CDN jquery 2.2.0 dir" do
 
+    before do
+      @tmpdir = "tmpdir1"
+      Dir.mkdir(@tmpdir)
+    end
+
+    after do
+      FileUtils.rm_rf(@tmpdir)
+    end
+
     def _do_download_test1(cdn_code, library="jquery", version="2.2.0")
-      @tmpdir = tmpdir = "tmpdir1"
-      Dir.mkdir(tmpdir)
+      tmpdir = @tmpdir
       sout, serr = capture_io() do
         actual = CDNGet::Main.new().run(cdn_code, library, version, tmpdir)
       end
       yield tmpdir, sout, serr
-    ensure
-      FileUtils.rm_r(tmpdir) if File.directory?(tmpdir)
     end
 
     def _do_download_test2(cdn_code, library="jquery-jcrop", version="0.9.12")
-      @tmpdir = tmpdir = "tmpdir1"
-      Dir.mkdir(tmpdir)
+      tmpdir = @tmpdir
       sout, serr = capture_io() do
         actual = CDNGet::Main.new().run(cdn_code, library, version, tmpdir)
       end
       yield tmpdir, sout, serr
-    ensure
-      FileUtils.rm_r(tmpdir) if File.directory?(tmpdir)
     end
 
     def _do_download_test3(cdn_code, libname, version, expected)
-      @tmpdir = tmpdir = "tmpdir1"
-      Dir.mkdir(tmpdir)
+      tmpdir = @tmpdir
       path = "#{tmpdir}/#{libname}/#{version}"
       # 1st
       sout, serr = capture_io() do
@@ -635,8 +637,6 @@ END
           " (Unchanged)\n"
         end
       }
-    ensure
-      FileUtils.rm_r(tmpdir)
     end
 
     it "(cdnjs) downloads files into dir." do
@@ -830,7 +830,7 @@ END
     end
 
     it "(cdnjs) doesn't override existing files when they are identical to downloaded files." do
-      tmpdir = "tmpdir1"
+      tmpdir = @tmpdir
       expected = <<END
 #{tmpdir}/jquery-jcrop/2.0.4/css/Jcrop.css ... Done (7,401 byte)
 #{tmpdir}/jquery-jcrop/2.0.4/css/Jcrop.gif ... Done (329 byte)
@@ -842,7 +842,7 @@ END
     end
 
     it "(google) doesn't override existing files when they are identical to downloaded files." do
-      tmpdir = "tmpdir1"
+      tmpdir = @tmpdir
       expected = <<END
 #{tmpdir}/jquery/3.6.0/jquery.min.js ... Done (89,501 byte)
 END
@@ -850,7 +850,7 @@ END
     end
 
     it "(jsdelivr) doesn't override existing files when they are identical to downloaded files." do
-      tmpdir = "tmpdir1"
+      tmpdir = @tmpdir
       expected = <<END
 #{tmpdir}/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
 #{tmpdir}/chibijs@3.0.9/.npmignore ... Done (46 byte)
@@ -865,7 +865,7 @@ END
     end
 
     it "(unpkg) doesn't override existing files when they are identical to downloaded files." do
-      tmpdir = "tmpdir1"
+      tmpdir = @tmpdir
       expected = <<END
 #{tmpdir}/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
 #{tmpdir}/chibijs@3.0.9/.npmignore ... Done (46 byte)
