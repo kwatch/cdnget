@@ -601,19 +601,17 @@ END
     end
 
     def _do_download_test1(cdn_code, library="jquery", version="2.2.0")
-      tmpdir = @tmpdir
       sout, serr = capture_io() do
-        actual = CDNGet::Main.new().run(cdn_code, library, version, tmpdir)
+        actual = CDNGet::Main.new().run(cdn_code, library, version, @tmpdir)
       end
-      yield tmpdir, sout, serr
+      yield sout, serr
     end
 
     def _do_download_test2(cdn_code, library="jquery-jcrop", version="0.9.12")
-      tmpdir = @tmpdir
       sout, serr = capture_io() do
-        actual = CDNGet::Main.new().run(cdn_code, library, version, tmpdir)
+        actual = CDNGet::Main.new().run(cdn_code, library, version, @tmpdir)
       end
-      yield tmpdir, sout, serr
+      yield sout, serr
     end
 
     def _do_download_test3(cdn_code, libname, version, expected)
@@ -640,7 +638,8 @@ END
     end
 
     it "(cdnjs) downloads files into dir." do
-      _do_download_test1("cdnjs", "jquery", "2.2.0") do |tmpdir, sout, serr|
+      tmpdir = @tmpdir
+      _do_download_test1("cdnjs", "jquery", "2.2.0") do |sout, serr|
         ok {"#{tmpdir}/jquery/2.2.0/jquery.js"     }.file_exist?
         ok {"#{tmpdir}/jquery/2.2.0/jquery.min.js" }.file_exist?
         ok {"#{tmpdir}/jquery/2.2.0/jquery.min.map"}.file_exist?
@@ -653,7 +652,8 @@ END
     end
 
     it "(google) downloads files into dir." do
-      _do_download_test1("google", "jquery", "2.2.0") do |tmpdir, sout, serr|
+      tmpdir = @tmpdir
+      _do_download_test1("google", "jquery", "2.2.0") do |sout, serr|
         ok {"#{tmpdir}/jquery/2.2.0/jquery.min.js" }.file_exist?
         ok {sout} == <<END
 #{tmpdir}/jquery/2.2.0/jquery.min.js ... Done (85,589 byte)
@@ -662,7 +662,8 @@ END
     end
 
     it "(jsdelivr) downloads files into dir." do
-      _do_download_test1("jsdelivr", "chibijs", "3.0.9") do |tmpdir, sout, serr|
+      tmpdir = @tmpdir
+      _do_download_test1("jsdelivr", "chibijs", "3.0.9") do |sout, serr|
         ok {"#{tmpdir}/chibijs@3.0.9/.jshintrc"        }.file_exist?
         ok {"#{tmpdir}/chibijs@3.0.9/.npmignore"       }.file_exist?
         ok {"#{tmpdir}/chibijs@3.0.9/chibi.js"         }.file_exist?
@@ -685,7 +686,8 @@ END
     end
 
     it "(unpkg) downloads files into dir." do
-      _do_download_test1("unpkg", "chibijs", "3.0.9") do |tmpdir, sout, serr|
+      tmpdir = @tmpdir
+      _do_download_test1("unpkg", "chibijs", "3.0.9") do |sout, serr|
         ok {"#{tmpdir}/chibijs@3.0.9/.jshintrc"        }.file_exist?
         ok {"#{tmpdir}/chibijs@3.0.9/.npmignore"       }.file_exist?
         ok {"#{tmpdir}/chibijs@3.0.9/chibi.js"         }.file_exist?
@@ -708,7 +710,8 @@ END
     end
 
     it "(cdnjs) downloads files (containing subdir) into dir." do
-      _do_download_test2("cdnjs", "jquery-jcrop", "0.9.12") do |tmpdir, sout, serr|
+      tmpdir = @tmpdir
+      _do_download_test2("cdnjs", "jquery-jcrop", "0.9.12") do |sout, serr|
         ok {"#{tmpdir}/jquery-jcrop/0.9.12/css/Jcrop.gif"             }.file_exist?
         ok {"#{tmpdir}/jquery-jcrop/0.9.12/css/jquery.Jcrop.css"      }.file_exist?
         ok {"#{tmpdir}/jquery-jcrop/0.9.12/css/jquery.Jcrop.min.css"  }.file_exist?
@@ -735,7 +738,8 @@ END
     end
 
     it "(jsdelivr) downloads files (containing subdir) into dir." do
-      _do_download_test2("jsdelivr", "zepto", "1.2.0") do |tmpdir, sout, serr|
+      tmpdir = @tmpdir
+      _do_download_test2("jsdelivr", "zepto", "1.2.0") do |sout, serr|
         ok {"#{tmpdir}/zepto@1.2.0/dist/zepto.js"    }.file_exist?
         ok {"#{tmpdir}/zepto@1.2.0/dist/zepto.min.js"}.file_exist?
         ok {"#{tmpdir}/zepto@1.2.0/MIT-LICENSE"      }.file_exist?
@@ -786,7 +790,8 @@ END
     end
 
     it "(unpkg) downloads files (containing subdir) into dir." do
-      _do_download_test2("unpkg", "react", "17.0.2") do |tmpdir, sout, serr|
+      tmpdir = @tmpdir
+      _do_download_test2("unpkg", "react", "17.0.2") do |sout, serr|
         ok {"#{tmpdir}/react@17.0.2/build-info.json"            }.file_exist?
         ok {"#{tmpdir}/react@17.0.2/cjs/react.development.js"   }.file_exist?
         ok {"#{tmpdir}/react@17.0.2/cjs/react.production.min.js"}.file_exist?
