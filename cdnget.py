@@ -105,7 +105,8 @@ def format_integer(value):
     return ",".join(reversed(ss))
 
 def sort_versions(versions, reverse=False):
-    versions.sort(key=lambda x: tuple( to_i(s) for s in x.split('.') ) + (x,))
+    versions.sort()
+    versions.sort(key=lambda x: tuple( to_i(s) for s in x.split('.') ))
     if reverse:
         versions.reverse()
     return versions
