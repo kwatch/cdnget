@@ -46,21 +46,31 @@ google      # https://developers.google.com/speed/libraries/
         @test("cdnget -h, --help")
         def _(self):
             expected = r"""
-cdnget  -- download files from public CDN
+cdnget  -- download files from public CDN (cdnjs/jsdelivr/google)
 
-Usage: cdnget [<options>] [<CDN>] [<library>] [<version>] [<directory>]
+Usage: cdnget [<options>] [<CDN> [<library> [<version> [<directory>]]]]
 
 Options:
     -h, --help        : help
     -v, --version     : version
     -q, --quiet       : minimal output
+        --debug       : (debug mode)
 
 Example:
-    $ cdnget                           # list public CDN
-    $ cdnget cdnjs                     # list libraries
-    $ cdnget cdnjs jquery              # list versions
-    $ cdnget cdnjs jquery 2.2.4        # list files
-    $ cdnget cdnjs jquery 2.2.4 /tmp   # download files
+    $ cdnget                                # list public CDN names
+    $ cdnget [-q] cdnjs                     # list libraries
+    $ cdnget [-q] cdnjs 'jquery*'           # search libraries
+    $ cdnget [-q] cdnjs jquery              # list versions
+    $ cdnget [-q] cdnjs jquery latest       # show latest version
+    $ cdnget [-q] cdnjs jquery 2.2.4        # list files
+    $ mkdir -p static/lib                     # create a directory
+    $ cdnget [-q] cdnjs jquery 2.2.4 /static/lib  # download files
+    static/lib/jquery/2.2.4/jquery.js ... Done (257,551 byte)
+    static/lib/jquery/2.2.4/jquery.min.js ... Done (85,578 byte)
+    static/lib/jquery/2.2.4/jquery.min.map ... Done (129,572 byte)
+    $ ls static/lib/jquery/2.2.4
+    jquery.js       jquery.min.js   jquery.min.map
+
 """[1:]
             #
             sout, serr = _run("-h")
@@ -118,13 +128,29 @@ Example:
         def _(self):
             sout, serr = _run("cdnjs jquery")
             ok (serr) == ""
-            lines = sout.splitlines(True)
-            ok (lines[0]) == "name:  jquery\n"
-            ok (lines[1]) == "desc:  JavaScript library for DOM operations\n"
-            ok (lines[2]) == "tags:  jquery, library, ajax, framework, toolkit, popular\n"
-            ok (lines[3]) == "versions:\n"
-            for line in lines[4:]:
-                ok (line).matches(r'  - \d+(\.\d+)+')
+            expected = r"""
+name:     jquery
+desc:     JavaScript library for DOM operations
+tags:     jquery, library, ajax, framework, toolkit, popular
+site:     http://jquery.com/
+info:     https://cdnjs.com//libraries/jquery
+license:  MIT
+versions:
+"""[1:]
+            ok (sout.startswith(expected)) == True
+            expected2 = r"""
+  - 1.4.4
+  - 1.4.3
+  - 1.4.2
+  - 1.4.1
+  - 1.4.0
+  - 1.3.2
+  - 1.3.1
+  - 1.3.0
+  - 1.2.6
+  - 1.2.3
+"""[1:]
+            ok (sout.endswith(expected2)) == True
 
         @test("cdnget cdnjs <library> <version>")
         def _(self):
@@ -135,6 +161,9 @@ name:     jquery
 version:  2.2.4
 desc:     JavaScript library for DOM operations
 tags:     jquery, library, ajax, framework, toolkit, popular
+site:     http://jquery.com/
+info:     https://cdnjs.com//libraries/jquery/2.2.4
+license:  MIT
 urls:
   - https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.js
   - https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js
@@ -195,33 +224,43 @@ urls:
 
     with subject("jsdelivr"):
 
-        jquery_desc = (
-            "jQuery is a fast and concise JavaScript Library that simplifies "
-            "HTML document traversing, event handling, animating, and Ajax "
-            "interactions for rapid web development. jQuery is designed to "
-            "change the way that you write JavaScript."
-        )
-
         @test("cdnget jsdelivr")
         def _(self):
             sout, serr = _run("jsdelivr")
-            ok (serr) == ""
-            for line in sout.splitlines():
-                ok (line).matches(r'^\w+([-.]\w+)* *\# .*$')
-            expected = ("jquery                # " + self.jquery_desc)
-            ok (sout).contains("\n%s\n" % expected)
+            ok (sout) == ""
+            ok (serr) == "jsdelivr: cannot list libraries; please specify pattern such as 'jquery*'.\n"
 
         @test("cdnget jsdelivr <library>")
         def _(self):
             sout, serr = _run("jsdelivr jquery")
             ok (serr) == ""
-            lines = sout.splitlines(True)
-            ok (lines[0]) == "name:  jquery\n"
-            ok (lines[1]) == "desc:  %s\n" % self.jquery_desc
-            ok (lines[2]) == "site:  http://jquery.com/\n"
-            ok (lines[3]) == "versions:\n"
-            for line in lines[4:]:
-                ok (line).matches(r'  - \d+(\.\d+)+')
+            expected = """
+name:     jquery
+desc:     JavaScript library for DOM operations
+tags:     jquery, javascript, browser, library
+site:     https://jquery.com
+info:     https://www.jsdelivr.com/package/npm/jquery
+license:  MIT
+versions:
+"""[1:]
+            ok (sout.startswith(expected)) == True
+            expected2 = """
+  - 1.11.1-rc2
+  - 1.11.1-rc1
+  - 1.11.1-beta1
+  - 1.11.0-rc1
+  - 1.11.0-beta3
+  - 1.11.0
+  - 1.9.1
+  - 1.8.3
+  - 1.8.2
+  - 1.7.3
+  - 1.7.2
+  - 1.6.3
+  - 1.6.2
+  - 1.5.1
+"""
+            ok (sout.endswith(expected2)) == True
 
         @test("cdnget jsdelivr <library> <version>")
         def _(self):
@@ -230,12 +269,22 @@ urls:
             expected = r"""
 name:     jquery
 version:  2.2.4
+desc:     JavaScript library for DOM operations
+tags:     jquery, javascript, browser, library
+site:     https://jquery.com
+info:     https://www.jsdelivr.com/package/npm/jquery?version=2.2.4
+npmpkg:   https://registry.npmjs.org/jquery/-/jquery-2.2.4.tgz
+default:  /dist/jquery.min.js
+license:  MIT
 urls:
-  - https://cdn.jsdelivr.net/jquery/2.2.4/jquery.js
-  - https://cdn.jsdelivr.net/jquery/2.2.4/jquery.min.js
-  - https://cdn.jsdelivr.net/jquery/2.2.4/jquery.min.map
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.4/AUTHORS.txt
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.4/bower.json
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.4/dist/jquery.js
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.4/dist/jquery.min.js
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.4/dist/jquery.min.map
+  - https://cdn.jsdelivr.net/npm/jquery@2.2.4/external/sizzle/dist/sizzle.js
 """[1:]
-            ok (sout) == expected
+            ok (sout.startswith(expected)) == True
 
         @test("cdnget jsdelivr <library> <version> <directory>")
         def _(self):
@@ -244,22 +293,35 @@ urls:
             os.makedirs(dir)
             #
             expected = r"""
-./test.d/lib2/jquery/2.2.4/jquery.js ... Done (257,551 byte)
-./test.d/lib2/jquery/2.2.4/jquery.min.js ... Done (85,578 byte)
-./test.d/lib2/jquery/2.2.4/jquery.min.map ... Done (129,572 byte)
+./test.d/lib2/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
+./test.d/lib2/chibijs@3.0.9/.npmignore ... Done (46 byte)
+./test.d/lib2/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
+./test.d/lib2/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
+./test.d/lib2/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
+./test.d/lib2/chibijs@3.0.9/package.json ... Done (756 byte)
+./test.d/lib2/chibijs@3.0.9/README.md ... Done (21,283 byte)
+./test.d/lib2/chibijs@3.0.9/tests/runner.html ... Done (14,302 byte)
 """[1:]
-            sout, serr = _run("jsdelivr jquery 2.2.4 %s" % dir)
+            sout, serr = _run("jsdelivr chibijs 3.0.9 %s" % dir)
             ok (serr) == ""
             ok (sout) == expected
             #
-            ok ("./test.d/lib2/jquery/2.2.4/jquery.js").is_file()
-            ok ("./test.d/lib2/jquery/2.2.4/jquery.min.js").is_file()
-            ok ("./test.d/lib2/jquery/2.2.4/jquery.min.map").is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/.jshintrc"        ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/.npmignore"       ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/chibi.js"         ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/chibi-min.js"     ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/gulpfile.js"      ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/package.json"     ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/README.md"        ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/tests/runner.html").is_file()
             from glob import glob
-            ok (sorted(glob("./test.d/lib2/jquery/2.2.4/*"))) == [
-              "./test.d/lib2/jquery/2.2.4/jquery.js",
-              "./test.d/lib2/jquery/2.2.4/jquery.min.js",
-              "./test.d/lib2/jquery/2.2.4/jquery.min.map",
+            ok (sorted(glob("./test.d/lib2/chibijs@3.0.9/*"))) == [
+                "./test.d/lib2/chibijs@3.0.9/README.md",
+                "./test.d/lib2/chibijs@3.0.9/chibi-min.js",
+                "./test.d/lib2/chibijs@3.0.9/chibi.js",
+                "./test.d/lib2/chibijs@3.0.9/gulpfile.js",
+                "./test.d/lib2/chibijs@3.0.9/package.json",
+                "./test.d/lib2/chibijs@3.0.9/tests",
             ]
 
         @test("cdnget --quiet jsdelivr <library> <version> <directory>")
@@ -268,23 +330,24 @@ urls:
             at_end(lambda: shutil.rmtree('./test.d'))
             os.makedirs(dir)
             for opt in ["-q", "--quiet"]:
-                sout, serr = _run(opt + " jsdelivr jquery 2.2.4 %s" % dir)
+                sout, serr = _run(opt + " jsdelivr chibijs 3.0.9 %s" % dir)
                 ok (serr) == ""
                 ok (sout) == ""
-                ok ("./test.d/lib2/jquery/2.2.4/jquery.js").is_file()
-                ok ("./test.d/lib2/jquery/2.2.4/jquery.min.js").is_file()
-                ok ("./test.d/lib2/jquery/2.2.4/jquery.min.map").is_file()
+                ok ("./test.d/lib2/chibijs@3.0.9/chibi.js"    ).is_file()
+                ok ("./test.d/lib2/chibijs@3.0.9/chibi-min.js").is_file()
+                ok ("./test.d/lib2/chibijs@3.0.9/README.md"   ).is_file()
 
-        @test("cdnget jsdelivr blablabla", tag="curr")
+        @test("cdnget jsdelivr non-exist-package", tag="curr")
         def _(self):
-            sout, serr = _run("jsdelivr blablabla")
-            ok (serr) == "blablabla: library not found.\n"
+            sout, serr = _run("jsdelivr txamwxzp5")
+            ok (serr) == "txamwxzp5: library not found.\n"
             ok (sout) == ""
 
         @test("cdnget jsdelivr jquery 999.999.999", tag="curr")
         def _(self):
             sout, serr = _run("jsdelivr jquery 999.999.999")
-            ok (serr) == "jquery 999.999.999: version not found.\n"
+            #ok (serr) == "jquery 999.999.999: version not found.\n"
+            ok (serr) == "jquery@999.999.999: library or version not found.\n"
             ok (sout) == ""
 
 
@@ -332,12 +395,22 @@ webfont
         def _(self):
             sout, serr = _run("google jquery")
             ok (serr) == ""
-            lines = sout.splitlines(True)
-            ok (lines[0]) == "name:  jquery\n"
-            ok (lines[1]) == "site:  http://jquery.com/\n"
-            ok (lines[2]) == "versions:\n"
-            for line in lines[3:]:
-                ok (line).matches(r'  - \d+(\.\d+)+')
+            expected = r"""
+name:     jquery
+site:     http://jquery.com/
+info:     https://developers.google.com/speed/libraries/#jquery
+versions:
+"""[1:]
+            ok (sout.startswith(expected)) == True
+            expected2 = r"""
+  - 1.4.0
+  - 1.3.2
+  - 1.3.1
+  - 1.3.0
+  - 1.2.6
+  - 1.2.3
+"""[1:]
+            ok (sout.endswith(expected2)) == True
 
         @test("cdnget google <library> <version>")
         def _(self):
@@ -347,6 +420,7 @@ webfont
 name:     jquery
 version:  2.2.4
 site:     http://jquery.com/
+info:     https://developers.google.com/speed/libraries/#jquery
 urls:
   - https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js
 """[1:]

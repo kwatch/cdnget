@@ -23,18 +23,22 @@ RELEASE = '$Release: 0.0.0 $'.split()[1]
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
-assert PY2 or PY3, "unexpeted python version"
+if not (PY2 or PY3):
+    raise RuntimeError("unexpeted python version")
 
 if PY3:
     unicode    = str
     basestring = str
-    from urllib.request import urlopen
+    from urllib.request import urlopen, Request
     from urllib.error import HTTPError
+    from urllib.parse import quote_plus, urlencode, urlparse, urljoin
     stdout     = sys.stdout.buffer
     stderr     = sys.stderr.buffer
 elif PY2:
     bytes      = str
-    from urllib2 import urlopen, HTTPError
+    from urllib2 import urlopen, Request, HTTPError
+    from urllib import quote_plus, urlencode
+    from urlparse import urlparse, urljoin
     stdout     = sys.stdout
     stderr     = sys.stderr
 
@@ -55,6 +59,12 @@ elif PY2:
 else:
     assert False
 
+
+def to_i(s):
+    try:
+        return int(s)
+    except:
+        return 0
 
 def echo_n(string):
     stdout.write(B(string))
@@ -94,11 +104,34 @@ def format_integer(value):
     ss = [ m.group(0)[::-1] for m in re.finditer(r'..?.?', str(value)[::-1]) ]
     return ",".join(reversed(ss))
 
+def sort_versions(versions, reverse=False):
+    versions.sort(key=lambda x: tuple( to_i(s) for s in x.split('.') ) + (x,))
+    if reverse:
+        versions.reverse()
+    return versions
+
+def json_dump(x):
+    return json.dumps(x, ensure_ascii=False, indent=4, separators=(': ', ', '))
+
+_debug_mode = False
+
+def _debug_print(x):
+    if not _debug_mode:
+        return
+    if isinstance(x, dict):
+        sys.stderr.write("\e[0;35m*** %s\e[0m\n" % json_dump(x))
+    else:
+        sys.stderr.write("\e[0;35m*** %r\e[0m\n" % (x,))
+
 
 class Base(object):
 
     def list(self):
         raise NotImplementedError("%s.list(): not implemented yet." % self.__class__.__name__)
+
+    def search(self, pattern):
+        rexp = self.pattern2rexp(pattern)
+        return [ d for d in self.list() if rexp.match(d['name']) ]
 
     def find(self, library):
         raise NotImplementedError("%s.find(): not implemented yet." % self.__class__.__name__)
@@ -106,16 +139,91 @@ class Base(object):
     def get(self, library, version):
         raise NotImplementedError("%s.get(): not implemented yet." % self.__class__.__name__)
 
+    def download(self, library, version, basedir=".", quiet=False):
+        self.validate(library, version)
+        if not os.path.exists(basedir):
+            raise CommandError("%s: not exist." % basedir)
+        if not os.path.isdir(basedir):
+            raise CommandError("%s: not a directory." % basedir)
+        d = self.get(library, version)
+        target_dir = (os.path.join(basedir, d['destdir']) if d.get('destdir') else
+                      os.path.join(basedir, library, version))
+        skipfile = d.get('skipfile')
+        for file in d['files']:
+            #filepath = os.path.join(target_dir, file)   # wrong!
+            filepath = "%s%s" % (target_dir, file)
+            #
+            if skipfile and skipfile.match(file):
+                print("%s ... Skipped" % file)   # for example, skip '.DS_Store' files
+                continue
+            #
+            if filepath.endswith('/'):
+                if os.path.exists(filepath):
+                    if not quiet:
+                        print("%s ... Done (Already exists)" % filepath)
+                else:
+                    if not quiet:
+                        sys.stdout.write("%s ..." % filepath)
+                    os.makedirs(filepath)
+                    if not quiet:
+                        print("Done (Created)")
+                continue
+            #
+            dirpath  = os.path.dirname(filepath)
+            if not quiet:
+                echo_n("%s ..." % filepath)
+            #url = urljoin(d['baseurl'], file)    # wrong!
+            url = "%s%s" % (d['baseurl'], file)
+            content = self.fetch(url)
+            content = B(content)
+            if not quiet:
+                echo_n(" Done (%s byte)" % format_integer(len(content)))
+            if not os.path.exists(dirpath):
+                os.makedirs(dirpath)
+            unchanged = False
+            if os.path.exists(filepath):
+                with open(filepath, 'rb') as f:
+                    unchanged = f.read() == content
+            if unchanged:
+                if not quiet:
+                    echo_n(" (Unchanged)")
+            else:
+                with open(filepath, 'wb') as f:
+                    f.write(content)
+            if not quiet:
+                echo_n("\n")
+
+    def http_get(self, url):
+        resp = urlopen(url)
+        resp_body = resp.read()
+        resp.close()
+        return resp_body
+
     def fetch(self, url, library=None):
-        return read_url(url)
+        try:
+            return self.http_get(url)
+        except HTTPError as exc:
+            if not (exc.code == 404 and library):
+                raise CommandError("GET %s: %s" % (url, exc))
+            elif not library.endswith('js'):
+                raise CommandError("%s: library not found." % library)
+            else:
+                maybe = (re.sub(r'\.js$', 'js', library) if library.endswith('.js') else
+                         re.sub(r'js$', '.js', library))
+                raise CommandError("%s: library not found (maybe '%s'?)" % maybe)
 
     def validate(self, library, version):
         if library:
             if not re.match(r'^[-.\w]+$', library):
-                raise ValueError("%r: Unexpected library name.")
+                raise ValueError("%r: unexpected library name.")
         if version:
             if not re.match(r'^\d+(\.\d+)+([-.\w]+)?$', version):
-                raise ValueError("%r: Unexpected version number." % version)
+                raise ValueError("%r: unexpected version number." % version)
+
+    @staticmethod
+    def pattern2rexp(pattern):
+        rexp_str = '.*'.join( re.escape(x) for x in pattern.split('*') )
+        return re.compile(r'^%s$' % rexp_str, re.I)
 
 
 class CDNJS(Base):
@@ -124,95 +232,153 @@ class CDNJS(Base):
     API_URL  = "https://api.cdnjs.com/libraries"
     CDN_URL  = "https://cdnjs.cloudflare.com/ajax/libs"
 
+    def fetch(self, url, library=None):
+        json_str = Base.fetch(self, url, library)
+        if json_str == "{}" and library:
+            if library.endswith('js'):
+                maybe = (re.sub(r'\.js$', 'js', library) if library.endswith('.js') else
+                         re.sub(r'js$', '.js', library))
+                raise CommandError("%s: library not found (maybe '%s'?)." % (library, maybe))
+            else:
+                raise CommandError("%s: library not found." % (library,))
+        return json_str
+
     def list(self):
         jstr = self.fetch("%s?fields=name,description" % self.API_URL)
         jdata = json.loads(S(jstr))
+        _debug_print(jdata)
         libs = [ dict(name=d['name'], desc=d['description']) for d in jdata['results'] ]
         return list(uniq(sorted(libs, key=lambda d: d['name'])))
 
     def find(self, library):
         self.validate(library, None)
-        jstr = self.fetch("%s/%s" % (self.API_URL, library))
-        if jstr is None:
-            return None
+        jstr = self.fetch("%s/%s" % (self.API_URL, library), library)
         jdata = json.loads(S(jstr))
-        if jdata == {}:
-            return None
+        _debug_print(jdata)
+        sep = re.compile(r'[-.]')
+        versions = sort_versions([ d['version'] for d in jdata['assets'] ], reverse=True)
         return {
             'name': library,
-            'desc': jdata['description'],
-            'tags': ", ".join(jdata['keywords'] or []),
-            'versions': [ d['version'] for d in jdata['assets'] ],
+            'desc': jdata.get('description'),
+            'tags': ", ".join(jdata.get('keywords') or []),
+            'site': jdata.get('homepage'),
+            'info': "%s/libraries/%s" % (self.SITE_URL, library),
+            'license': jdata.get('license'),
+            'versions': versions,
         }
 
     def get(self, library, version):
         self.validate(library, version)
-        jstr = self.fetch("%s/%s" % (self.API_URL, library))
+        jstr = self.fetch("%s/%s" % (self.API_URL, library), library)
         jdata = json.loads(S(jstr))
         if jdata == {}:
             return None
         d = find_one(jdata['assets'], lambda d: d['version'] == version)
         if d is None:
             return None
-        baseurl = "%s/%s/%s/" % (self.CDN_URL, library, version)
+        baseurl = "%s/%s/%s" % (self.CDN_URL, library, version)
         return {
             'name'   :  library,
-            'desc'   :  jdata['description'],
-            'tags'   :  ", ".join(jdata['keywords'] or []),
             'version':  version,
-            'urls'   :  [ baseurl + s for s in d['files'] ],
-            'files'  :  d['files'],
+            'desc'   :  jdata.get('description'),
+            'tags'   :  ", ".join(jdata.get('keywords', [])),
+            'site'   :  jdata.get('homepage'),
+            'info'   :  "%s/libraries/%s/%s" % (self.SITE_URL, library, version),
+            'urls'   :  [ "%s/%s" % (baseurl, x) for x in d['files'] ],
+            'files'  :  [ "/"+x for x in d['files'] ],
             'baseurl':  baseurl,
+            'license': jdata.get('license'),
         }
 
 
 class JSDelivr(Base):
     CODE     = "jsdelivr"
     SITE_URL = "https://www.jsdelivr.com/"
-    API_URL  = "https://api.jsdelivr.com/v1/jsdelivr/libraries"
-    CDN_URL  = "https://cdn.jsdelivr.net/"
+    #API_URL  = "https://api.jsdelivr.com/v1/jsdelivr/libraries"
+    API_URL  = "https://data.jsdelivr.com/v1"
+    CDN_URL  = "https://cdn.jsdelivr.net/npm"
+    HEADERS  = {
+        "x-algo""lia-app""lication-id": "OFCNC""OG2CU",
+        "x-algo""lia-api""-key": "f54e21fa3a2""a0160595bb05""8179bfb1e",
+    }
 
     def list(self):
-        jstr = self.fetch("%s?fields=name,description,homepage" % self.API_URL)
-        arr = json.loads(S(jstr))
-        dicts = [ dict(name=d['name'], desc=d['description'], site=d['homepage'])
-                      for d in arr ]
-        dicts.sort(key=lambda d: d['name'])
-        return dicts
+        return None    # None means that this CDN can't list libraries without pattern
+
+    def search(self, pattern):
+        form_data = {
+            "query":      pattern,
+            "page":       "0",
+            "hitsPerPage": "1000",
+            "attributesToHighlight": '[]',
+            "attributesToRetrieve": '["name","description","version"]',
+        }
+        payload = json.dumps({"params": urlencode(form_data)}, separators=(',', ':'))
+        url = "https://ofcncog2cu-3.algolianet.com/1/indexes/npm-search/query"
+        resp = urlopen(Request(url, payload, self.HEADERS))
+        jstr = resp.read()
+        jdata = json.loads(jstr)
+        _debug_print(jdata)
+        rexp = self.pattern2rexp(pattern)
+        return [ {"name": d["name"], "desc": d["description"], "version": d["version"]}
+                     for d in jdata["hits"] if rexp.match(d["name"]) ]
 
     def find(self, library):
         self.validate(library, None)
-        jstr = self.fetch("%s?name=%s&fields=name,description,homepage,versions" % (self.API_URL, library))
-        if jstr is None:
-            return None
-        arr = json.loads(S(jstr))
-        d = item_at(arr, 0)
-        if not d:
-            return None
+        url = "https://ofcncog2cu-dsn.algolia.net/1/indexes/npm-search/%s" % (library,)
+        try:
+            resp = urlopen(Request(url, None, self.HEADERS))
+            jstr = resp.read()
+        except HTTPError as exc:
+            if exc.code == 404:
+                raise CommandError("%s: library not found." % (library,))
+            else:
+                raise CommandError("GET %s: %s" % (url, exc))
+        dict1 = json.loads(jstr)
+        _debug_print(dict1)
+        versions = sort_versions(list(dict1['versions'].keys()), reverse=True)
+        #
+        url = "%s/package/npm/%s" % (self.API_URL, library)
+        jstr = self.fetch("%s/package/npm/%s" % (self.API_URL, library), library)
+        dict2 = json.loads(jstr)
+        _debug_print(dict2)
+        #
+        d = dict1
         return {
-            'name'    :  d['name'],
-            'desc'    :  d['description'],
-            'site'    :  d['homepage'],
-            'versions':  d['versions'],
+            "name":     d['name'],
+            "desc":     d.get('description'),
+            "versions": versions,
+            "tags":     ", ".join(d.get('keywords', [])),
+            "site":     d.get('homepage'),
+            "info":     urljoin(self.SITE_URL, "/package/npm/%s" % library),
+            "license":  d.get('license'),
         }
 
     def get(self, library, version):
         self.validate(library, version)
-        baseurl = "%s%s/%s" % (self.CDN_URL, library, version)
-        jstr  = self.fetch("%s/%s/%s" % (self.API_URL, library, version))
-        if jstr is None:
-            return None
-        files = json.loads(S(jstr))
-        if not files:
-            raise CommandError("%s: Library not found." % library)
-        urls  = [ "%s/%s" % (baseurl, x) for x in files ]
-        return {
-            'name'   :  library,
-            'version':  version,
-            'urls'   :  urls,
-            'files'  :  files,
-            'baseurl':  baseurl,
-        }
+        url = "%s/package/npm/%s@%s/flat" % (self.API_URL, library, version)
+        try:
+            jstr = self.fetch(url, library)
+        except CommandError:
+            raise CommandError("%s@%s: library or version not found." % (library, version))
+        jdata = json.loads(jstr)
+        files = [ d["name"] for d in jdata.get('files', []) ]
+        baseurl = "%s/%s@%s" % (self.CDN_URL, library, version)
+        _debug_print(jdata)
+        #
+        dct = self.find(library)
+        del dct["versions"]
+        dct.update({
+            "version": version,
+            "info":    urljoin(self.SITE_URL, "/package/npm/%s?version=%s" % (library, version)),
+            "npmpkg":  "https://registry.npmjs.org/%s/-/%s-%s.tgz" % (library, library, version),
+            "urls":    [ baseurl + x for x in files ],
+            "files":   files,
+            "baseurl": baseurl,
+            "default": jdata["default"],
+            "destdir": "%s@%s" % (library, version),
+        })
+        return dct
 
 
 class GoogleCDN(Base):
@@ -222,12 +388,13 @@ class GoogleCDN(Base):
     CDN_URL  = "https://ajax.googleapis.com/ajax/libs"
 
     def list(self):
-        libs = []
         html = S(self.fetch(self.SITE_URL))
+        _debug_print(html)
         rexp = self.CDN_URL.replace('.', r'\.') + '/([^/]+)/([^/]+)/([^"]+)'
+        libs = []
         for m in re.finditer(rexp, html):
             lib, ver, file = m.groups()
-            libs.append(dict(name=lib, desc="latest version: %s" % ver))
+            libs.append({"name": lib, "desc": "latest version: %s" % ver})
         return uniq(sorted(libs, key=lambda d: d['name']))
 
     def find(self, library):    # TODO: use scraping library such as lxml
@@ -266,6 +433,7 @@ class GoogleCDN(Base):
         return {
             'name'    : library,
             'site'    : site_url,
+            'info'    : "%s#%s" % (self.SITE_URL, library),
             'urls'    : urls,
             'versions': versions,
         }
@@ -279,11 +447,12 @@ class GoogleCDN(Base):
         if urls:
             rexp = r'(/libs/%s)/[^/]+' % library
             urls = [ re.sub(rexp, r'\1/%s' % version, s) for s in urls ]
-        baseurl = "%s/%s/%s/" % (self.CDN_URL, library, version)
+        baseurl = "%s/%s/%s" % (self.CDN_URL, library, version)
         files = [ s[len(baseurl):] for s in urls ] or None
         return {
             'name'   :  d['name'],
             'site'   :  d['site'],
+            'info'    : "%s#%s" % (self.SITE_URL, library),
             'urls'   :  urls,
             'files'  :  files,
             'baseurl':  baseurl,
@@ -312,34 +481,62 @@ class MainApp(object):
     def __init__(self, script=None):
         self.script = script or os.path.basename(sys.argv[0])
 
-    def help_message(self, ):
+    def help_message(self):
         return r'''
-{script}  -- download files from public CDN
+{script}  -- download files from public CDN (cdnjs/jsdelivr/google)
 
-Usage: {script} [<options>] [<CDN>] [<library>] [<version>] [<directory>]
+Usage: {script} [<options>] [<CDN> [<library> [<version> [<directory>]]]]
 
 Options:
     -h, --help        : help
     -v, --version     : version
     -q, --quiet       : minimal output
+        --debug       : (debug mode)
 
 Example:
-    $ {script}                           # list public CDN
-    $ {script} cdnjs                     # list libraries
-    $ {script} cdnjs jquery              # list versions
-    $ {script} cdnjs jquery 2.2.4        # list files
-    $ {script} cdnjs jquery 2.2.4 /tmp   # download files
+    $ {script}                                # list public CDN names
+    $ {script} [-q] cdnjs                     # list libraries
+    $ {script} [-q] cdnjs 'jquery*'           # search libraries
+    $ {script} [-q] cdnjs jquery              # list versions
+    $ {script} [-q] cdnjs jquery latest       # show latest version
+    $ {script} [-q] cdnjs jquery 2.2.4        # list files
+    $ mkdir -p static/lib                     # create a directory
+    $ {script} [-q] cdnjs jquery 2.2.4 /static/lib  # download files
+    static/lib/jquery/2.2.4/jquery.js ... Done (257,551 byte)
+    static/lib/jquery/2.2.4/jquery.min.js ... Done (85,578 byte)
+    static/lib/jquery/2.2.4/jquery.min.map ... Done (129,572 byte)
+    $ ls static/lib/jquery/2.2.4
+    jquery.js       jquery.min.js   jquery.min.map
+
 '''[1:].format(script=self.script)
+
+    @classmethod
+    def main(cls, argv=None):
+        if argv is None:
+            argv = sys.argv[1:]
+        try:
+            output = cls().run(*argv)
+        except CommandError as exc:
+            stderr.write(B(str(exc)))
+            stderr.write(b"\n")
+            sys.exit(1)
+        else:
+            if output:
+                stdout.write(B(output))
+            sys.exit(0)
 
     def run(self, *args):
         args = list(args)
-        cmdopts = self.parse_cmdopts(args, "hvq", ["help", "version", "quiet"])
+        cmdopts = self.parse_cmdopts(args, "hvq", ["help", "version", "quiet", "debug"])
         opt = cmdopts.get
         if opt('h') or opt('help'):
             return self.help_message()
         if opt('v') or opt('version'):
             return "%s\n" % RELEASE
         self.quiet = bool(opt('q') or opt('quiet'))
+        global _debug_mode
+        if opt('debug'):
+            _debug_mode = True
         #
         self.validate(item_at(args, 1), item_at(args, 2))
         #
@@ -370,7 +567,7 @@ Example:
             if not re.match(r'^[-.\w]+$', library):
                 raise CommandError("%s: Unexpected library name." % library)
         if version:
-            if not re.match(r'[-.\w]+', version):
+            if not re.match(r'^[-.\w]+$', version):
                 raise CommandError("%s: Unexpected version number." % version)
 
     def parse_cmdopts(self, cmdargs, short_opts, long_opts):
@@ -421,13 +618,14 @@ Example:
 
     def do_list_libraries(self, cdn_code):
         cdn = self.find_cdn(cdn_code)
-        return self.render_list(cdn.list())
+        lst = cdn.list()
+        if lst is None:
+            raise CommandError("%s: cannot list libraries; please specify pattern such as 'jquery*'." % cdn_code)
+        return self.render_list(lst)
 
     def do_search_libraries(self, cdn_code, pattern):
         cdn = self.find_cdn(cdn_code)
-        rexp_str = '.*'.join( re.escape(x) for x in pattern.split('*') )
-        rexp = re.compile(r'^%s$' % rexp_str, re.I)
-        return self.render_list( a for a in cdn.list if rexp.match(a['name']) )
+        return self.render_list(cdn.search(pattern))
 
     def do_find_library(self, cdn_code, library):
         cdn = self.find_cdn(cdn_code)
@@ -436,14 +634,14 @@ Example:
             raise CommandError("%s: library not found." % library)
         buf = []; add = buf.append
         if self.quiet:
-            if d['versions']:
+            if d.get('versions'):
                 for ver in d['versions']:
-                    add("\n" % ver)
+                    add("%s\n" % ver)
         else:
-            add("name:  %s\n" % d['name'])
-            if d.get('desc'):  add("desc:  %s\n" % d['desc'])
-            if d.get('tags'):  add("tags:  %s\n" % d['tags'])
-            if d.get('site'):  add("site:  %s\n" % d['site'])
+            keys = "name desc tags site info license"
+            for key in keys.split():
+                if d.get(key):
+                    add("%-9s %s\n" % (key+":", d[key]))
             if d.get('snippet'):
                 add("snippet: |\n")
                 add(re.sub(r'^', "    ", d['snippet']))
@@ -454,6 +652,8 @@ Example:
 
     def do_get_library(self, cdn_code, library, version):
         cdn = self.find_cdn(cdn_code)
+        if version == 'latest':
+            version = self._latest_version(cdn, library)
         d = cdn.get(library, version)
         if d is None:
             if cdn.find(library) is None:
@@ -466,11 +666,10 @@ Example:
                 for url in d['urls']:
                     add("%s\n" % url)
         else:
-            add("name:     %s\n" % d['name'])
-            add("version:  %s\n" % d['version'])
-            if d.get('desc'):  add("desc:     %s\n" % d['desc'])
-            if d.get('tags'):  add("tags:     %s\n" % d['tags'])
-            if d.get('site'):  add("site:     %s\n" % d['site'])
+            keys = "name version desc tags site info npmpkg default license"
+            for key in keys.split():
+                if d.get(key):
+                    add("%-9s %s\n" % (key+":", d[key]))
             if d.get('snippet'):
                 add("snippet: |\n")
                 add(re.sub(r'^', "    ", d['snippet']))
@@ -482,53 +681,18 @@ Example:
 
     def do_download_library(self, cdn_code, library, version, basedir):
         cdn = self.find_cdn(cdn_code)
-        cdn.validate(library, version)
-        if not os.path.exists(basedir):
-            raise CommandError("%s: not exist." % basedir)
-        if not os.path.isdir(basedir):
-            raise CommandError("%s: not a directory." % basedir)
-        quiet = self.quiet
-        target_dir = os.path.join(basedir, library, version)
-        d = cdn.get(library, version)
-        for file in d['files']:
-            filepath = os.path.join(target_dir, file)
-            dirpath  = os.path.dirname(filepath)
-            if not quiet:
-                echo_n("%s ..." % filepath)
-            url = os.path.join(d['baseurl'], file)
-            content = cdn.fetch(url)
-            content = B(content)
-            if not quiet:
-                echo_n(" Done (%s byte)" % format_integer(len(content)))
-            if not os.path.exists(dirpath):
-                os.makedirs(dirpath)
-            unchanged = False
-            if os.path.exists(filepath):
-                with open(filepath, 'rb') as f:
-                    unchanged = f.read() == content
-            if unchanged:
-                if not quiet:
-                    echo_n(" (Unchanged)")
-            else:
-                with open(filepath, 'wb') as f:
-                    f.write(content)
-            if not quiet:
-                echo_n("\n")
+        if version == 'latest':
+            version = self._latest_version(cdn, library)
+        cdn.download(library, version, basedir, quiet=self.quiet)
+        return None
+
+    def _latest_version(self, cdn, library):
+        d = cdn.find(library)
+        return None if d is None else d['versions'][0]
 
 
-def main(args=None):
-    if args is None:
-        args = sys.argv[1:]
-    try:
-        output = MainApp().run(*args)
-    except CommandError as ex:
-        stderr.write(B(str(ex)))
-        stderr.write(b"\n")
-        sys.exit(1)
-    else:
-        if output:
-            stdout.write(B(output))
-        sys.exit(0)
+def main(argv=None):
+    MainApp.main(argv)
 
 
 if __name__ == '__main__':
