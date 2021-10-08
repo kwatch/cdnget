@@ -18,6 +18,7 @@
 
 import sys, os, re
 import json
+import gzip
 
 RELEASE = '$Release: 0.0.0 $'.split()[1]
 
@@ -32,6 +33,7 @@ if PY3:
     from urllib.request import urlopen, Request
     from urllib.error import HTTPError
     from urllib.parse import quote_plus, urlencode, urlparse, urljoin
+    from http.client import HTTPConnection, HTTPSConnection
     stdout     = sys.stdout.buffer
     stderr     = sys.stderr.buffer
 elif PY2:
@@ -39,6 +41,7 @@ elif PY2:
     from urllib2 import urlopen, Request, HTTPError
     from urllib import quote_plus, urlencode
     from urlparse import urlparse, urljoin
+    from httplib import HTTPConnection, HTTPSConnection
     stdout     = sys.stdout
     stderr     = sys.stderr
 
@@ -125,6 +128,64 @@ def _debug_print(x):
         sys.stderr.write("\e[0;35m*** %r\e[0m\n" % (x,))
 
 
+class HttpConn(object):
+
+    def __init__(self, uri, default_headers=None):
+        if   uri.scheme == 'http':   klass = HTTPConnection
+        elif uri.scheme == 'https':  klass = HTTPSConnection
+        else:
+            raise TypeError("expected only http or https.")
+        self.conn = klass(uri.netloc, uri.port)
+        self.default_headers = default_headers
+
+    def close(self):
+        self.conn.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.conn.close()
+
+    def get(self, uri, headers=None, data=None):
+        return self._request('GET', uri, data, headers)
+
+    def post(self, uri, headers=None, data=None):
+        return self._request('POST', uri, data, headers)
+
+    def _request(self, method, uri, headers=None, data=None):
+        headers_ = self._build_req_headers(headers)
+        path = uri.path
+        if uri.query:
+            path += "?"+uri.query
+        #self.conn.request(method, path, data=data, headers=headers_)  # TypeError: request() got an unexpected keyword argument 'data'
+        self.conn.request(method, path, data, headers=headers_)
+        resp = self.conn.getresponse()
+        return self._get_resp_body(resp)
+
+    def _build_req_headers(self, headers):
+        headers_ = {}
+        if self.default_headers:
+            headers_.update(self.default_headers)
+        if hasattr(gzip, 'decompress'):
+            headers_['accept-encoding'] = 'gzip'
+        if headers:
+            headers_.update(headers)
+        return headers_
+
+    def _get_resp_body(self, resp):
+        if 200 <= resp.status < 300:
+            return self._read_resp_body(resp)
+        else:
+            raise HTTPError(uri.geturl(), resp.status, resp.reason, resp.getheader, resp.fp)
+
+    def _read_resp_body(self, resp):
+        binary = resp.read()
+        if resp.getheader('content-encoding') == 'gzip':
+            binary = gzip.decompress(binary)
+        return binary
+
+
 class Base(object):
 
     def list(self):
@@ -149,6 +210,7 @@ class Base(object):
         d = self.get(library, version)
         target_dir = (os.path.join(basedir, d['destdir']) if d.get('destdir') else
                       os.path.join(basedir, library, version))
+        http_conn = None
         skipfile = d.get('skipfile')
         for file in d['files']:
             #filepath = os.path.join(target_dir, file)   # wrong!
@@ -175,8 +237,12 @@ class Base(object):
                 echo_n("%s ..." % filepath)
             #url = urljoin(d['baseurl'], file)    # wrong!
             url = "%s%s" % (d['baseurl'], file)
-            content = self.fetch(url)
-            content = B(content)
+            uri = urlparse(url)
+            #content = self.fetch(url)
+            #content = B(content)
+            if http_conn is None:
+                http_conn = HttpConn(uri)
+            content = http_conn.get(uri)
             if not quiet:
                 echo_n(" Done (%s byte)" % format_integer(len(content)))
             if not os.path.exists(dirpath):
@@ -193,6 +259,8 @@ class Base(object):
                     f.write(content)
             if not quiet:
                 echo_n("\n")
+        if http_conn is not None:
+            http_conn.close()
 
     def http_get(self, url):
         resp = urlopen(url)
