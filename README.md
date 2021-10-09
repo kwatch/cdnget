@@ -28,6 +28,7 @@ Example
 $ cdnget                           # list public CDN
 $ cdnget cdnjs                     # list libraries
 $ cdnget cdnjs jquery              # list versions
+$ cdnget cdnjs jquery latest       # show latest version
 $ cdnget cdnjs jquery 2.2.4        # list files
 $ mkdir -p static/lib
 $ cdnget cdnjs jquery 2.2.4 static/libs   # download files
@@ -69,3 +70,15 @@ For examle:
 <?py end ?>
 <script href="${baseurl}/jquery/2.2.4/jquery.min.js"></script>
 ```
+
+
+ChangeLog
+---------
+
+* Release 1.1.0
+  * Supports new public CDN: UNPKG (https://unpkg.com/)
+  * Supports `latest` as version number of libraries
+  * Change jsDelivr CDN to new API (supports npm package only)
+
+* Release 1.0.0
+  * Public release
