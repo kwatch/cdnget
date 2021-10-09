@@ -3,7 +3,7 @@
 CDNget README (for Python)
 ==========================
 
-($Release: 0.0.0 $)
+($Release: 1.1.0 $)
 
 CDNget is a utility to download files from public CDN:
 

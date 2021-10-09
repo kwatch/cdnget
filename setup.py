@@ -12,7 +12,7 @@ def _pypi_download_url(name, version):
 
 def _kwargs():
     name          = 'cdnget'
-    version       = '$Release: 0.0.0 $'.split(' ')[1]
+    version       = '$Release: 1.1.0 $'.split(' ')[1]
     author        = 'kwatch'
     author_email  = 'kwatch@gmail.com'
     description   = 'Utility to download files from public CDN (CDNJS/jsDelivr/UNPKG/Google)'
