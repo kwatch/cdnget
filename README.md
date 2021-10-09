@@ -62,10 +62,10 @@ Therefore it is easy to switch base location of JS libraries between CDN and loc
 For examle:
 
 ```html
-{% if APP_MODE == "development" %}
-{%   baseurl = "/static/lib" %}
-{% else %}
-{%   baseurl = "https://cdnjs.cloudflare.com/ajax/libs" %}
-{% endif %}
-<script href="{{ baseurl }}/jquery/2.2.4/jquery.min.js"></script>
+<?py if APP_MODE == "development": ?>
+<?py     basedir = "/static/lib" ?>
+<?py else: ?>
+<?py     basedir = "https://cdnjs.cloudflare.com/ajax/libs" ?>
+<?py end ?>
+<script href="${baseurl}/jquery/2.2.4/jquery.min.js"></script>
 ```
