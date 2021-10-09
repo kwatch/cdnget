@@ -301,6 +301,10 @@ class Base(object):
             if not re.match(r'^\d+(\.\d+)+([-.\w]+)?$', version):
                 raise ValueError("%r: unexpected version number." % version)
 
+    def latest_version(self, library):
+        d = self.find(library)
+        return None if d is None else d['versions'][0]
+
     @staticmethod
     def pattern2rexp(pattern):
         rexp_str = '.*'.join( re.escape(x) for x in pattern.split('*') )
@@ -483,7 +487,7 @@ class Unpkg(Base):
 
     def search(self, pattern):
         url = "%s/search?q=%s&size=250" % (self.API_URL, pattern)
-        jstr = self.fetch(url)   # 403 Forbidden. Why?
+        jstr = self.fetch(url)
         jdata = json.loads(jstr)
         _debug_print(jdata)
         rexp = self.pattern2rexp(pattern)
@@ -557,6 +561,22 @@ class Unpkg(Base):
             "skipfile": re.compile(r'\.DS_Store$'),  # downloading '.DS_Store' from UNPKG results in 403
         })
         return dct
+
+    def latest_version(self, library):
+        url = self.SITE_URL + "browse/%s/" % library
+        uri = urlparse(url)
+        with HttpConn(uri) as http_conn:
+            resp = http_conn.request('HEAD', uri.path)
+            if resp.status >= 400:
+                raise CommandError("%s: library not found." % library)
+            assert resp.status == 302    # 302 Found
+            location = resp.getheader('location')
+        assert location
+        assert location.startswith('/'), "** location=%s" % location
+        tupl = location.split("/browse/%s@" % library)
+        assert len(tupl) == 2, "** location=%s" % location
+        version = tupl[1]
+        return version.rstrip('/')
 
 
 class GoogleCDN(Base):
@@ -831,7 +851,7 @@ Example:
     def do_get_library(self, cdn_code, library, version):
         cdn = self.find_cdn(cdn_code)
         if version == 'latest':
-            version = self._latest_version(cdn, library)
+            version = cdn.latest_version(library)
         d = cdn.get(library, version)
         if d is None:
             if cdn.find(library) is None:
@@ -860,13 +880,9 @@ Example:
     def do_download_library(self, cdn_code, library, version, basedir):
         cdn = self.find_cdn(cdn_code)
         if version == 'latest':
-            version = self._latest_version(cdn, library)
+            version = cdn.latest_version(library)
         cdn.download(library, version, basedir, quiet=self.quiet)
         return None
-
-    def _latest_version(self, cdn, library):
-        d = cdn.find(library)
-        return None if d is None else d['versions'][0]
 
 
 def main(argv=None):
