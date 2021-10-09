@@ -125,9 +125,9 @@ def _debug_print(x):
     if not _debug_mode:
         return
     if isinstance(x, dict):
-        stderr.write(B("\e[0;35m*** %s\e[0m\n" % json_dump(x)))
+        stderr.write(B("\033[0;35m*** %s\033[0m\n" % json_dump(x)))
     else:
-        stderr.write(B("\e[0;35m*** %r\e[0m\n" % (x,)))
+        stderr.write(B("\033[0;35m*** %r\033[0m\n" % (x,)))
 
 
 class HttpConn(object):
@@ -358,6 +358,7 @@ class CDNJS(Base):
         self.validate(library, version)
         jstr = self.fetch("%s/%s" % (self.API_URL, library), library)
         jdata = json.loads(S(jstr))
+        _debug_print(jdata)
         if jdata == {}:
             return None
         d = find_one(jdata['assets'], lambda d: d['version'] == version)
