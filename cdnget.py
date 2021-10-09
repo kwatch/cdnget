@@ -117,7 +117,7 @@ def sort_versions(versions, reverse=False):
     return versions
 
 def json_dump(x):
-    return json.dumps(x, ensure_ascii=False, indent=4, separators=(': ', ', '))
+    return json.dumps(x, ensure_ascii=False, indent=4, separators=(', ', ': '))
 
 _debug_mode = False
 
