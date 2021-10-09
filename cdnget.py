@@ -32,18 +32,20 @@ if PY3:
     basestring = str
     from urllib.request import urlopen, Request
     from urllib.error import HTTPError
-    from urllib.parse import quote_plus, urlencode, urlparse, urljoin
+    from urllib.parse import urlencode, urlparse, urljoin
     from http.client import HTTPConnection, HTTPSConnection
     stdout     = sys.stdout.buffer
     stderr     = sys.stderr.buffer
 elif PY2:
     bytes      = str
     from urllib2 import urlopen, Request, HTTPError
-    from urllib import quote_plus, urlencode
+    from urllib import urlencode
     from urlparse import urlparse, urljoin
     from httplib import HTTPConnection, HTTPSConnection
     stdout     = sys.stdout
     stderr     = sys.stderr
+else:
+    assert False, "** failed to detect Python version (2 or 3)."
 
 def U(s, encoding='utf-8'):
     if isinstance(s, bytes):
@@ -123,9 +125,9 @@ def _debug_print(x):
     if not _debug_mode:
         return
     if isinstance(x, dict):
-        sys.stderr.write("\e[0;35m*** %s\e[0m\n" % json_dump(x))
+        stderr.write(B("\e[0;35m*** %s\e[0m\n" % json_dump(x)))
     else:
-        sys.stderr.write("\e[0;35m*** %r\e[0m\n" % (x,))
+        stderr.write(B("\e[0;35m*** %r\e[0m\n" % (x,)))
 
 
 class HttpConn(object):
@@ -238,7 +240,7 @@ class Base(object):
                         print("%s ... Done (Already exists)" % filepath)
                 else:
                     if not quiet:
-                        sys.stdout.write("%s ..." % filepath)
+                        stdout.write("%s ..." % filepath)
                     os.makedirs(filepath)
                     if not quiet:
                         print("Done (Created)")
