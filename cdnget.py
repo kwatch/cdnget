@@ -148,20 +148,32 @@ class HttpConn(object):
         self.conn.close()
 
     def get(self, uri, headers=None, data=None):
-        return self._request('GET', uri, data, headers)
+        resp = self.request('GET', uri.path, uri.query, data, headers)
+        i = 10
+        while resp.status == 302:
+            location = resp.getheader('location')
+            if not (location and location.startswith('/')):
+                break
+            _ = resp.read()            # to avoid http.client.ResponseNotReady
+            uri = urlparse(location)   # todo: support port etc
+            resp = self.request('GET', uri.path, uri.query, data, headers)
+            i -= 1
+            if i <= 0:
+                break
+        return self._get_resp_body(resp, uri)
 
     def post(self, uri, headers=None, data=None):
-        return self._request('POST', uri, data, headers)
+        resp = self.request('POST', uri.path, uri.query, data, headers)
+        return self._get_resp_body(resp, uri)
 
-    def _request(self, method, uri, headers=None, data=None):
+    def request(self, method, path, query=None, headers=None, data=None):
         headers_ = self._build_req_headers(headers)
-        path = uri.path
-        if uri.query:
-            path += "?"+uri.query
+        if query:
+            path += "?"+query
         #self.conn.request(method, path, data=data, headers=headers_)  # TypeError: request() got an unexpected keyword argument 'data'
         self.conn.request(method, path, data, headers=headers_)
         resp = self.conn.getresponse()
-        return self._get_resp_body(resp)
+        return resp
 
     def _build_req_headers(self, headers):
         headers_ = {}
@@ -173,7 +185,7 @@ class HttpConn(object):
             headers_.update(headers)
         return headers_
 
-    def _get_resp_body(self, resp):
+    def _get_resp_body(self, resp, uri):
         if 200 <= resp.status < 300:
             return self._read_resp_body(resp)
         else:
@@ -279,7 +291,7 @@ class Base(object):
             else:
                 maybe = (re.sub(r'\.js$', 'js', library) if library.endswith('.js') else
                          re.sub(r'js$', '.js', library))
-                raise CommandError("%s: library not found (maybe '%s'?)" % maybe)
+                raise CommandError("%s: library not found (maybe '%s'?)" % (library, maybe))
 
     def validate(self, library, version):
         if library:
