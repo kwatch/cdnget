@@ -351,6 +351,135 @@ urls:
             ok (sout) == ""
 
 
+    with subject("unpkg"):
+
+        @test("cdnget unpkg")
+        def _(self):
+            sout, serr = _run("unpkg")
+            ok (sout) == ""
+            ok (serr) == "unpkg: cannot list libraries; please specify pattern such as 'jquery*'.\n"
+
+        @test("cdnget unpkg <library>")
+        def _(self):
+            sout, serr = _run("unpkg jquery")
+            ok (serr) == ""
+            expected = """
+name:     jquery
+desc:     JavaScript library for DOM operations
+tags:     jquery, javascript, browser, library
+site:     https://jquery.com
+info:     https://unpkg.com/browse/jquery/
+license:  MIT
+versions:
+"""[1:]
+            ok (sout.startswith(expected)) == True
+            expected2 = """
+  - 1.11.1
+  - 1.11.1-rc2
+  - 1.11.1-rc1
+  - 1.11.1-beta1
+  - 1.11.0
+  - 1.11.0-rc1
+  - 1.11.0-beta3
+  - 1.9.1
+  - 1.8.3
+  - 1.8.2
+  - 1.7.3
+  - 1.7.2
+  - 1.6.3
+  - 1.6.2
+  - 1.5.1
+"""
+            ok (sout.endswith(expected2)) == True
+
+        @test("cdnget unpkg <library> <version>")
+        def _(self):
+            sout, serr = _run("unpkg jquery 3.6.0")
+            ok (serr) == ""
+            expected = r"""
+name:     jquery
+version:  3.6.0
+desc:     JavaScript library for DOM operations
+tags:     jquery, javascript, browser, library
+site:     https://jquery.com
+info:     https://unpkg.com/browse/jquery@3.6.0/
+npmpkg:   https://registry.npmjs.org/jquery/-/jquery-3.6.0.tgz
+default:  /dist/jquery.min.js
+license:  MIT
+urls:
+  - https://unpkg.com/jquery@3.6.0/AUTHORS.txt
+  - https://unpkg.com/jquery@3.6.0/bower.json
+  - https://unpkg.com/jquery@3.6.0/dist/jquery.js
+  - https://unpkg.com/jquery@3.6.0/dist/jquery.min.js
+  - https://unpkg.com/jquery@3.6.0/dist/jquery.min.map
+"""[1:]
+            ok (sout.startswith(expected)) == True
+
+        @test("cdnget unpkg <library> <version> <directory>")
+        def _(self):
+            dir = './test.d/lib2'
+            at_end(lambda: shutil.rmtree('./test.d'))
+            os.makedirs(dir)
+            #
+            expected = r"""
+./test.d/lib2/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
+./test.d/lib2/chibijs@3.0.9/.npmignore ... Done (46 byte)
+./test.d/lib2/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
+./test.d/lib2/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
+./test.d/lib2/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
+./test.d/lib2/chibijs@3.0.9/package.json ... Done (756 byte)
+./test.d/lib2/chibijs@3.0.9/README.md ... Done (21,283 byte)
+./test.d/lib2/chibijs@3.0.9/tests/runner.html ... Done (14,302 byte)
+"""[1:]
+            sout, serr = _run("unpkg chibijs 3.0.9 %s" % dir)
+            ok (serr) == ""
+            ok (sout) == expected
+            #
+            ok ("./test.d/lib2/chibijs@3.0.9/.jshintrc"        ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/.npmignore"       ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/chibi.js"         ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/chibi-min.js"     ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/gulpfile.js"      ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/package.json"     ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/README.md"        ).is_file()
+            ok ("./test.d/lib2/chibijs@3.0.9/tests/runner.html").is_file()
+            from glob import glob
+            ok (sorted(glob("./test.d/lib2/chibijs@3.0.9/*"))) == [
+                "./test.d/lib2/chibijs@3.0.9/README.md",
+                "./test.d/lib2/chibijs@3.0.9/chibi-min.js",
+                "./test.d/lib2/chibijs@3.0.9/chibi.js",
+                "./test.d/lib2/chibijs@3.0.9/gulpfile.js",
+                "./test.d/lib2/chibijs@3.0.9/package.json",
+                "./test.d/lib2/chibijs@3.0.9/tests",
+            ]
+
+        @test("cdnget --quiet unpkg <library> <version> <directory>")
+        def _(self):
+            dir = './test.d/lib2'
+            at_end(lambda: shutil.rmtree('./test.d'))
+            os.makedirs(dir)
+            for opt in ["-q", "--quiet"]:
+                sout, serr = _run(opt + " unpkg chibijs 3.0.9 %s" % dir)
+                ok (serr) == ""
+                ok (sout) == ""
+                ok ("./test.d/lib2/chibijs@3.0.9/chibi.js"    ).is_file()
+                ok ("./test.d/lib2/chibijs@3.0.9/chibi-min.js").is_file()
+                ok ("./test.d/lib2/chibijs@3.0.9/README.md"   ).is_file()
+
+        @test("cdnget unpkg non-exist-package", tag="curr")
+        def _(self):
+            sout, serr = _run("unpkg txamwxzp5")
+            ok (serr) == "txamwxzp5: library not found.\n"
+            ok (sout) == ""
+
+        @test("cdnget unpkg jquery 999.999.999", tag="curr")
+        def _(self):
+            sout, serr = _run("unpkg jquery 999.999.999")
+            #ok (serr) == "jquery 999.999.999: version not found.\n"
+            ok (serr) == "jquery@999.999.999: library or version not found.\n"
+            ok (sout) == ""
+
+
     with subject("google"):
 
         @test("cdnget google")

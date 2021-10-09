@@ -462,6 +462,103 @@ class JSDelivr(Base):
         return dct
 
 
+class Unpkg(Base):
+    CODE = "unpkg"
+    SITE_URL = "https://unpkg.com/"
+    #API_URL  = "https://www.npmjs.com"
+    API_URL  = "https://api.npms.io/v2"
+
+    def http_get(self, url):
+        #req = Request(url, None, {"x-spiferack": "1"})
+        #resp = urlopen(req)
+        #resp_body = resp.read()
+        #resp.close()
+        uri = urlparse(url)
+        with HttpConn(uri) as http_conn:
+            resp_body = http_conn.get(uri, None, {"x-spiferack": "1"})
+        return resp_body
+
+    def list(self):
+        return None    # None means that this CDN can't list libraries without pattern
+
+    def search(self, pattern):
+        url = "%s/search?q=%s&size=250" % (self.API_URL, pattern)
+        jstr = self.fetch(url)   # 403 Forbidden. Why?
+        jdata = json.loads(jstr)
+        _debug_print(jdata)
+        rexp = self.pattern2rexp(pattern)
+        #arr = jdata["objects"]   # www.npmjs.com
+        arr = jdata["results"]    # api.npms.io
+        arr = [ d["package"] for d in arr if rexp.search(d["package"]["name"]) ]
+        return [ {"name": d["name"], "desc": d.get("description"), "version": d["version"]}
+                     for d in arr ]
+
+    def find(self, library):
+        self.validate(library, None)
+        url  = "%s/package/%s" % (self.API_URL, library)
+        jstr = self.fetch(url, library)  # 403 Forbidden. Why?
+        jdata = json.loads(jstr)
+        _debug_print(jdata)
+        dct = jdata["collected"]["metadata"]
+        versions = [dct["version"]]
+        #
+        url  = self.SITE_URL + "browse/%s/" % library
+        html = self.fetch(url, library)
+        html = S(html)
+        _debug_print(html)
+        rexp = re.compile(r'<script>window.__DATA__\s*=\s*(.*?)<\/script>', re.M)
+        m = rexp.search(html)
+        if m:
+            jdata2 = json.loads(m.group(1))
+            versions = jdata2["availableVersions"]
+            versions.reverse()
+        #
+        site = None
+        if dct.get("links"):
+            if dct["links"].get("homepage"):
+                site = dct["links"].get("homepage")
+            else:
+                site = dct["links"].get("npm")
+        return {
+            "name":      dct.get("name"),
+            "desc":      dct.get("description"),
+            "tags":      ", ".join(dct.get("keywords", [])),
+            "site":      site,
+            "info":      self.SITE_URL + "browse/%s/" % library,
+            "versions":  versions,
+            "license":   dct.get("license"),
+        }
+
+    def get(self, library, version):
+        self.validate(library, version)
+        dct = self.find(library)
+        del dct["versions"]
+        #
+        url = "https://data.jsdelivr.com/v1/package/npm/%s@%s/flat" % (library, version)
+        try:
+            jstr = self.fetch(url, library)
+        except CommandError:
+            raise CommandError("%s@%s: library or version not found." % (library, version))
+        jdata   = json.loads(jstr)
+        files   = [ d["name"] for d in jdata["files"] ]
+        baseurl = self.SITE_URL + "%s@%s" % (library, version)
+        _debug_print(jdata)
+        #
+        dct.update({
+            "name":     library,
+            "version":  version,
+            "info":     self.SITE_URL + "browse/%s@%s/" % (library, version),
+            "npmpkg":   "https://registry.npmjs.org/%s/-/%s-%s.tgz" % (library, library, version),
+            "urls":     [ "%s%s" % (baseurl, x) for x in files ],
+            "files":    files,
+            "baseurl":  baseurl,
+            "default":  jdata.get("default"),
+            "destdir":  "%s@%s" % (library, version),
+            "skipfile": re.compile(r'\.DS_Store$'),  # downloading '.DS_Store' from UNPKG results in 403
+        })
+        return dct
+
+
 class GoogleCDN(Base):
     CODE     = "google"
     SITE_URL = "https://developers.google.com/speed/libraries/"
