@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from distutils.core import setup
+#from distutils.core import setup
+from setuptools import setup
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
@@ -52,10 +53,7 @@ Example::
     $ cdnget cdnjs jquery 2.2.4        # list files
     $ mkdir -p static/lib              # create a directory
     $ cdnget cdnjs jquery 2.2.4 static/lib  # download files
-    $ find static/lib
-    static/lib
-    static/lib/jquery
-    static/lib/jquery/2.2.4
+    $ find static/lib -type f
     static/lib/jquery/2.2.4/jquery.min.js
     static/lib/jquery/2.2.4/jquery.min.map
     static/lib/jquery/2.2.4/jquery.js
