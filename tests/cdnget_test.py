@@ -40,13 +40,14 @@ class Script_TC(unittest.TestCase):
             ok (sout) == r"""
 cdnjs       # https://cdnjs.com/
 jsdelivr    # https://www.jsdelivr.com/
+unpkg       # https://unpkg.com/
 google      # https://developers.google.com/speed/libraries/
 """[1:]
 
         @test("cdnget -h, --help")
         def _(self):
             expected = r"""
-cdnget  -- download files from public CDN (cdnjs/jsdelivr/google)
+cdnget  -- download files from public CDN (cdnjs/jsdelivr/unpkg/google)
 
 Usage: cdnget [<options>] [<CDN> [<library> [<version> [<directory>]]]]
 

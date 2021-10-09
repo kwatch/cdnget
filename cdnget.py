@@ -661,7 +661,7 @@ class MainApp(object):
 
     def help_message(self):
         return r'''
-{script}  -- download files from public CDN (cdnjs/jsdelivr/google)
+{script}  -- download files from public CDN (cdnjs/jsdelivr/unpkg/google)
 
 Usage: {script} [<options>] [<CDN> [<library> [<version> [<directory>]]]]
 
