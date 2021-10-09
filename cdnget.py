@@ -888,8 +888,8 @@ Example:
         return None
 
 
-def main(argv=None):
-    MainApp.main(argv)
+def main():
+    MainApp.main()
 
 
 if __name__ == '__main__':
