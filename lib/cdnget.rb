@@ -227,11 +227,11 @@ module CDNGet
       if library
         rexp = self.class.const_get(:LIBRARY_REXP)
         library =~ self.class.const_get(:LIBRARY_REXP)  or
-          raise ArgumentError.new("#{library.inspect}: Unexpected library name.")
+          raise CommandError.new("#{library}: Invalid library name.")
       end
       if version
         version =~ self.class.const_get(:VERSION_REXP)  or
-          raise ArgumentError.new("#{version.inspect}: Unexpected version number.")
+          raise CommandError.new("#{version}: Invalid version number.")
       end
     end
 

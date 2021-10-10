@@ -591,21 +591,29 @@ END
     spec "(cdnjs) raises error when version is wrong." do
       pr = proc { CDNGet::Main.new().run("cdnjs", "jquery", "1.0.0") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery/1.0.0: Library or version not found.")
+      pr = proc { CDNGet::Main.new().run("cdnjs", "jquery", "blabla") }
+      ok {pr}.raise?(CDNGet::CommandError, "blabla: Invalid version number.")
     end
 
     spec "(jsdelivr) raises error when version is wrong." do
       pr = proc { CDNGet::Main.new().run("jsdelivr", "jquery", "1.0.0") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery@1.0.0: Library or version not found.")
+      pr = proc { CDNGet::Main.new().run("jsdelivr", "jquery", "blabla") }
+      ok {pr}.raise?(CDNGet::CommandError, "blabla: Invalid version number.")
     end
 
     spec "(unpkg) raises error when version is wrong." do
       pr = proc { CDNGet::Main.new().run("unpkg", "jquery", "1.0.0") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery@1.0.0: Version not found.")
+      pr = proc { CDNGet::Main.new().run("unpkg", "jquery", "blabla") }
+      ok {pr}.raise?(CDNGet::CommandError, "blabla: Invalid version number.")
     end
 
     spec "(google) raises error when version is wrong." do
       pr = proc { CDNGet::Main.new().run("google", "jquery", "1.0.0") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery 1.0.0: Version not found.")
+      pr = proc { CDNGet::Main.new().run("google", "jquery", "blabla") }
+      ok {pr}.raise?(CDNGet::CommandError, "blabla: Invalid version number.")
     end
 
   end
