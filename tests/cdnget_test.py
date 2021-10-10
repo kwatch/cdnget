@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys, os
+import sys, os, re
 import unittest
 import shutil
 
@@ -474,6 +474,13 @@ urls:
 {dir}/@babel/core@7.15.5/src/transformation/util/clone-deep-browser.ts ... Done (500 byte)
 """[1:].format(dir=dir)
 
+        @test("cdnget jsdelivr react latest")
+        def _(self):
+            sout, serr = _run("jsdelivr react latest")
+            ok (serr) == ""
+            ok (sout).matches(re.compile(r'^name:     react$', re.M))
+            ok (sout).matches(re.compile(r'^version:  \d+.\d+.\d+$', re.M))
+
 
     with subject("unpkg"):
 
@@ -704,6 +711,13 @@ urls:
 {dir}/@babel/core@7.15.5/src/transformation/util/clone-deep-browser.ts ... Done (500 byte)
 {dir}/@babel/core@7.15.5/src/transformation/util/clone-deep.ts ... Done (223 byte)
 """[1:].format(dir=dir)
+
+        @test("cdnget unpkg react latest")
+        def _(self):
+            sout, serr = _run("unpkg react latest")
+            ok (serr) == ""
+            ok (sout).matches(re.compile(r'^name:     react$', re.M))
+            ok (sout).matches(re.compile(r'^version:  \d+.\d+.\d+$', re.M))
 
 
     with subject("google"):
