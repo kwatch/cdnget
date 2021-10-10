@@ -188,6 +188,7 @@ module CDNGet
     end
 
     def latest_version(library)
+      validate(library, nil)
       d = self.find(library)
       return d[:versions].first
     end
@@ -509,6 +510,7 @@ module CDNGet
     end
 
     def latest_version(library)
+      validate(library, nil)
       version = nil
       url = File.join(SITE_URL, "/browse/#{library}/")
       uri = URI.parse(url)
