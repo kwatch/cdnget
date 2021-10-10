@@ -306,6 +306,11 @@ class Base(object):
             if not self.VERSION_REXP.match(version):
                 raise ValueError("%s: unexpected version number." % version)
 
+    def npmpkg_url(self, library, version):
+        lib = library.replace('/', '%2f')
+        pkg = re.sub(r'^@[-\w]+/', '', library)
+        return "https://registry.npmjs.org/%s/-/%s-%s.tgz" % (lib, pkg, version)
+
     def latest_version(self, library):
         self.validate(library, None)
         d = self.find(library)
@@ -463,7 +468,7 @@ class JSDelivr(Base):
         dct.update({
             "version": version,
             "info":    urljoin(self.SITE_URL, "/package/npm/%s?version=%s" % (library, version)),
-            "npmpkg":  "https://registry.npmjs.org/%s/-/%s-%s.tgz" % (library, library, version),
+            "npmpkg":  self.npmpkg_url(library, version),
             "urls":    [ baseurl + x for x in files ],
             "files":   files,
             "baseurl": baseurl,
@@ -565,7 +570,7 @@ class Unpkg(Base):
             "name":     library,
             "version":  version,
             "info":     self.SITE_URL + "browse/%s@%s/" % (library, version),
-            "npmpkg":   "https://registry.npmjs.org/%s/-/%s-%s.tgz" % (library, library, version),
+            "npmpkg":  self.npmpkg_url(library, version),
             "urls":     [ "%s%s" % (baseurl, x) for x in files ],
             "files":    files,
             "baseurl":  baseurl,
