@@ -75,6 +75,10 @@ For examle:
 ChangeLog
 ---------
 
+* Release 1.2.0
+  * Changes to exclude alpha or beta version when using `latest` keyword on jsDelivr or UNPKG
+  * Supports `@author/name` style NPM package on jsDelivr and UNPKG
+
 * Release 1.1.0
   * Supports new public CDN: UNPKG (https://unpkg.com/)
   * Supports `latest` as version number of libraries
