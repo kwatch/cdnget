@@ -528,14 +528,16 @@ tags:     jquery, javascript, browser, library
 site:     https://jquery.com
 info:     https://unpkg.com/browse/jquery@3.6.0/
 npmpkg:   https://registry.npmjs.org/jquery/-/jquery-3.6.0.tgz
-default:  /dist/jquery.min.js
 license:  MIT
 urls:
-  - https://unpkg.com/jquery@3.6.0/AUTHORS.txt
-  - https://unpkg.com/jquery@3.6.0/bower.json
-  - https://unpkg.com/jquery@3.6.0/dist/jquery.js
-  - https://unpkg.com/jquery@3.6.0/dist/jquery.min.js
-  - https://unpkg.com/jquery@3.6.0/dist/jquery.min.map
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/_evalUrl.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/buildFragment.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/getAll.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/var/rscriptType.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/var/rtagName.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/setGlobalEval.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/support.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/wrapMap.js
 """[1:]
             ok (sout.startswith(expected)) == True
 
@@ -546,15 +548,15 @@ urls:
             os.makedirs(dir)
             #
             expected = r"""
-./test.d/lib2/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
-./test.d/lib2/chibijs@3.0.9/.npmignore ... Done (46 byte)
-./test.d/lib2/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
-./test.d/lib2/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
-./test.d/lib2/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
-./test.d/lib2/chibijs@3.0.9/package.json ... Done (756 byte)
-./test.d/lib2/chibijs@3.0.9/README.md ... Done (21,283 byte)
-./test.d/lib2/chibijs@3.0.9/tests/runner.html ... Done (14,302 byte)
-"""[1:]
+{dir}/chibijs@3.0.9/package.json ... Done (756 byte)
+{dir}/chibijs@3.0.9/.npmignore ... Done (46 byte)
+{dir}/chibijs@3.0.9/README.md ... Done (21,283 byte)
+{dir}/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
+{dir}/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
+{dir}/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
+{dir}/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
+{dir}/chibijs@3.0.9/tests/runner.html ... Done (14,302 byte)
+"""[1:].format(dir=dir)
             sout, serr = _run("unpkg chibijs 3.0.9 %s" % dir)
             ok (serr) == ""
             ok (sout) == expected
@@ -599,8 +601,7 @@ urls:
         @test("cdnget unpkg jquery 999.999.999")
         def _(self):
             sout, serr = _run("unpkg jquery 999.999.999")
-            #ok (serr) == "jquery 999.999.999: version not found.\n"
-            ok (serr) == "jquery@999.999.999: library or version not found.\n"
+            ok (serr) == "jquery@999.999.999: version not found.\n"
             ok (sout) == ""
 
         @test("cdnget unpkg @babel/core")
@@ -629,7 +630,6 @@ tags:     6to5, babel, classes, const, es6, harmony, let, modules, transpile, tr
 site:     https://babel.dev/docs/en/next/babel-core
 info:     https://unpkg.com/browse/@babel/core@7.15.5/
 npmpkg:   https://registry.npmjs.org/@babel%2fcore/-/core-7.15.5.tgz
-default:  /lib/index.min.js
 license:  MIT
 urls:
 """[1:])) == True
@@ -642,14 +642,16 @@ urls:
             sout, serr = _run("unpkg @babel/core 7.15.5 %s" % dir)
             ok (serr) == ""
             ok (sout) == r"""
+{dir}/@babel/core@7.15.5/LICENSE ... Done (1,106 byte)
+{dir}/@babel/core@7.15.5/README.md ... Done (404 byte)
 {dir}/@babel/core@7.15.5/lib/config/cache-contexts.js ... Done (0 byte)
 {dir}/@babel/core@7.15.5/lib/config/caching.js ... Done (7,327 byte)
 {dir}/@babel/core@7.15.5/lib/config/config-chain.js ... Done (17,871 byte)
 {dir}/@babel/core@7.15.5/lib/config/config-descriptors.js ... Done (6,756 byte)
 {dir}/@babel/core@7.15.5/lib/config/files/configuration.js ... Done (9,975 byte)
 {dir}/@babel/core@7.15.5/lib/config/files/import.js ... Done (165 byte)
-{dir}/@babel/core@7.15.5/lib/config/files/index.js ... Done (1,760 byte)
 {dir}/@babel/core@7.15.5/lib/config/files/index-browser.js ... Done (1,550 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/index.js ... Done (1,760 byte)
 {dir}/@babel/core@7.15.5/lib/config/files/module-types.js ... Done (2,731 byte)
 {dir}/@babel/core@7.15.5/lib/config/files/package.js ... Done (1,509 byte)
 {dir}/@babel/core@7.15.5/lib/config/files/plugins.js ... Done (6,287 byte)
@@ -664,8 +666,8 @@ urls:
 {dir}/@babel/core@7.15.5/lib/config/pattern-to-regex.js ... Done (1,143 byte)
 {dir}/@babel/core@7.15.5/lib/config/plugin.js ... Done (744 byte)
 {dir}/@babel/core@7.15.5/lib/config/printer.js ... Done (2,893 byte)
-{dir}/@babel/core@7.15.5/lib/config/resolve-targets.js ... Done (1,430 byte)
 {dir}/@babel/core@7.15.5/lib/config/resolve-targets-browser.js ... Done (945 byte)
+{dir}/@babel/core@7.15.5/lib/config/resolve-targets.js ... Done (1,430 byte)
 {dir}/@babel/core@7.15.5/lib/config/util.js ... Done (887 byte)
 {dir}/@babel/core@7.15.5/lib/config/validation/option-assertions.js ... Done (9,985 byte)
 {dir}/@babel/core@7.15.5/lib/config/validation/options.js ... Done (7,749 byte)
@@ -678,10 +680,10 @@ urls:
 {dir}/@babel/core@7.15.5/lib/parser/index.js ... Done (2,260 byte)
 {dir}/@babel/core@7.15.5/lib/parser/util/missing-plugin-helper.js ... Done (7,985 byte)
 {dir}/@babel/core@7.15.5/lib/tools/build-external-helpers.js ... Done (4,331 byte)
-{dir}/@babel/core@7.15.5/lib/transform.js ... Done (1,059 byte)
 {dir}/@babel/core@7.15.5/lib/transform-ast.js ... Done (1,257 byte)
-{dir}/@babel/core@7.15.5/lib/transform-file.js ... Done (1,059 byte)
 {dir}/@babel/core@7.15.5/lib/transform-file-browser.js ... Done (692 byte)
+{dir}/@babel/core@7.15.5/lib/transform-file.js ... Done (1,059 byte)
+{dir}/@babel/core@7.15.5/lib/transform.js ... Done (1,059 byte)
 {dir}/@babel/core@7.15.5/lib/transformation/block-hoist-plugin.js ... Done (1,802 byte)
 {dir}/@babel/core@7.15.5/lib/transformation/file/file.js ... Done (5,864 byte)
 {dir}/@babel/core@7.15.5/lib/transformation/file/generate.js ... Done (1,903 byte)
@@ -690,19 +692,17 @@ urls:
 {dir}/@babel/core@7.15.5/lib/transformation/normalize-file.js ... Done (3,796 byte)
 {dir}/@babel/core@7.15.5/lib/transformation/normalize-opts.js ... Done (1,543 byte)
 {dir}/@babel/core@7.15.5/lib/transformation/plugin-pass.js ... Done (1,035 byte)
-{dir}/@babel/core@7.15.5/lib/transformation/util/clone-deep.js ... Done (453 byte)
 {dir}/@babel/core@7.15.5/lib/transformation/util/clone-deep-browser.js ... Done (599 byte)
-{dir}/@babel/core@7.15.5/LICENSE ... Done (1,106 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/util/clone-deep.js ... Done (453 byte)
 {dir}/@babel/core@7.15.5/package.json ... Done (2,395 byte)
-{dir}/@babel/core@7.15.5/README.md ... Done (404 byte)
-{dir}/@babel/core@7.15.5/src/config/files/index.ts ... Done (735 byte)
 {dir}/@babel/core@7.15.5/src/config/files/index-browser.ts ... Done (2,846 byte)
-{dir}/@babel/core@7.15.5/src/config/resolve-targets.ts ... Done (1,612 byte)
+{dir}/@babel/core@7.15.5/src/config/files/index.ts ... Done (735 byte)
 {dir}/@babel/core@7.15.5/src/config/resolve-targets-browser.ts ... Done (1,074 byte)
-{dir}/@babel/core@7.15.5/src/transform-file.ts ... Done (1,475 byte)
+{dir}/@babel/core@7.15.5/src/config/resolve-targets.ts ... Done (1,612 byte)
 {dir}/@babel/core@7.15.5/src/transform-file-browser.ts ... Done (716 byte)
-{dir}/@babel/core@7.15.5/src/transformation/util/clone-deep.ts ... Done (223 byte)
+{dir}/@babel/core@7.15.5/src/transform-file.ts ... Done (1,475 byte)
 {dir}/@babel/core@7.15.5/src/transformation/util/clone-deep-browser.ts ... Done (500 byte)
+{dir}/@babel/core@7.15.5/src/transformation/util/clone-deep.ts ... Done (223 byte)
 """[1:].format(dir=dir)
 
 

@@ -558,15 +558,24 @@ class Unpkg(Base):
         dct = self.find(library)
         del dct["versions"]
         #
-        url = "https://data.jsdelivr.com/v1/package/npm/%s@%s/flat" % (library, version)
+        url = self.SITE_URL + "%s@%s/?meta" % (library, version)
         try:
             jstr = self.fetch(url, library)
         except CommandError:
-            raise CommandError("%s@%s: library or version not found." % (library, version))
-        jdata   = json.loads(jstr)
-        files   = [ d["name"] for d in jdata["files"] ]
-        baseurl = self.SITE_URL + "%s@%s" % (library, version)
+            raise CommandError("%s@%s: version not found." % (library, version))
+        jdata = json.loads(jstr)
         _debug_print(jdata)
+        def fn(jdata, files):
+            if jdata.get('files'):
+                for d in jdata['files']:
+                    if d['type'] == "directory":
+                        fn(d, files)
+                    else:
+                        files.append(d['path'])
+            return files
+        files = fn(jdata, [])
+        #files.sort(key=lambda s: s.lower())
+        baseurl = self.SITE_URL + "%s@%s" % (library, version)
         #
         dct.update({
             "name":     library,
