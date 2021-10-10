@@ -233,6 +233,12 @@ module CDNGet
       end
     end
 
+    def npmpkg_url(library, version)
+      pkg  = library.sub(/^@[-\w]+/, '')
+      path = "/#{library.gsub('/', '%2f')}/-/#{pkg}-#{version}.tgz"
+      return "https://registry.npmjs.org#{path}"
+    end
+
     def format_integer(value)
       return value.to_s.reverse.scan(/..?.?/).collect {|s| s.reverse }.reverse.join(',')
     end
@@ -398,13 +404,12 @@ module CDNGet
       baseurl = "#{CDN_URL}/#{library}@#{version}"
       _debug_print(jdata)
       #
-      npmpkg_path = "/#{library.gsub('/', '%2f')}/-/#{library.sub(/^@[-\w]+/, '')}-#{version}.tgz"
       dict = find(library)
       dict.delete(:versions)
       dict.update({
         version: version,
         info:    File.join(SITE_URL, "/package/npm/#{library}?version=#{version}"),
-        npmpkg:  "https://registry.npmjs.org#{npmpkg_path}",
+        npmpkg:  npmpkg_url(library, version),
         urls:    files.collect {|x| baseurl + x },
         files:   files,
         baseurl: baseurl,
@@ -501,12 +506,11 @@ module CDNGet
       baseurl = File.join(SITE_URL, "/#{library}@#{version}")
       _debug_print(jdata)
       #
-      npmpkg_path = "/#{library.gsub('/', '%2f')}/-/#{library.sub(/^@[-\w]+/, '')}-#{version}.tgz"
       dict.update({
         name:     library,
         version:  version,
         info:     File.join(SITE_URL, "/browse/#{library}@#{version}/"),
-        npmpkg:   "https://registry.npmjs.org#{npmpkg_path}",
+        npmpkg:   npmpkg_url(library, version),
         urls:     files.collect {|x| baseurl+x },
         files:    files,
         baseurl:  baseurl,
