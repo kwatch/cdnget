@@ -14,7 +14,7 @@ from cdnget import S
 
 def _run(argstr, input=None):
     from subprocess import Popen, PIPE
-    command = "./bin/cdnget %s" % argstr
+    command = "python -m cdnget %s" % argstr
     p = Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
     stdin, stdout, stderr = p.stdin, p.stdout, p.stderr
     try:
