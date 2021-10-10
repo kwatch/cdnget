@@ -2,6 +2,18 @@ Changes
 =======
 
 
+Release 1.1.0 (2021-10-10)
+---------------------------
+
+* Fix to ignore alpha or beta versions when using `latest` keyword on jsDelivr or UNPKG.
+* Support `@author/name` style NPM package name on jsDelivr and UNPKG.
+* Tweak help message.
+* Tweak error messages
+* (internal) Change UNPKG to use metadata from unpkg.com.
+* (internal) Make source code refactored.
+* (internal) Change testing library from `minitest` to `oktest`.
+
+
 Release 1.0.2 (2021-10-03)
 ---------------------------
 
