@@ -22,7 +22,7 @@ import sys, os, re
 import json
 import gzip
 
-RELEASE = '$Release: 0.0.0 $'.split()[1]
+RELEASE = '$Release: 1.2.0 $'.split()[1]
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
