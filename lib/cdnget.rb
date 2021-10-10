@@ -218,13 +218,17 @@ module CDNGet
       end
     end
 
+    LIBRARY_REXP = /\A[-.\w]+\z/
+    VERSION_REXP = /\A\d+(\.\d+)+([-.\w]+)?/
+
     def validate(library, version)
       if library
-        library =~ /\A[-.\w]+\z/  or
+        rexp = self.class.const_get(:LIBRARY_REXP)
+        library =~ self.class.const_get(:LIBRARY_REXP)  or
           raise ArgumentError.new("#{library.inspect}: Unexpected library name.")
       end
       if version
-        version =~ /\A\d+(\.\d+)+([-.\w]+)?/  or
+        version =~ self.class.const_get(:VERSION_REXP)  or
           raise ArgumentError.new("#{version.inspect}: Unexpected version number.")
       end
     end
@@ -681,9 +685,6 @@ END
       return RELEASE + "\n" if cmdopts['v'] || cmdopts['version']
       @quiet = cmdopts['quiet'] || cmdopts['q']
       @debug_mode = cmdopts['debug']
-      #
-      validate(args[1], args[2])
-      #
       case args.length
       when 0
         return do_list_cdns()
@@ -704,17 +705,6 @@ END
         return ""
       else
         raise CommandError.new("'#{args[4]}': Too many arguments.")
-      end
-    end
-
-    def validate(library, version)
-      if library && ! library.include?('*')
-        library =~ /\A[-.\w]+\z/  or
-          raise CommandError.new("#{library}: Unexpected library name.")
-      end
-      if version
-        version =~ /\A[-.\w]+\z/  or
-          raise CommandError.new("#{version}: Unexpected version number.")
       end
     end
 
