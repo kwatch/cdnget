@@ -497,12 +497,13 @@ module CDNGet
 
   class GoogleCDN < Base
     CODE = "google"
-    SITE_URL = 'https://developers.google.com/speed/libraries/'
+    SITE_URL = "https://developers.google.com/speed/libraries/"
+    CDN_URL  = "https://ajax\.googleapis\.com/ajax/libs"
 
     def list()
-      html = fetch("https://developers.google.com/speed/libraries/")
+      html = fetch(SITE_URL)
       _debug_print(html)
-      rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/([^/]+)/([^/]+)/([^"]+)"`
+      rexp = %r`"#{Regexp.escape(CDN_URL)}/([^/]+)/([^/]+)/([^"]+)"`
       libs = []
       html.scan(rexp) do |lib, ver, file|
         libs << {name: lib, desc: "latest version: #{ver}" }
@@ -512,9 +513,9 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      html = fetch("https://developers.google.com/speed/libraries/")
+      html = fetch(SITE_URL)
       _debug_print(html)
-      rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/#{library}/`
+      rexp = %r`"#{Regexp.escape(CDN_URL)}/#{library}/`
       site_url = nil
       versions = []
       urls = []
@@ -561,7 +562,7 @@ module CDNGet
         rexp = /(\/libs\/#{library})\/[^\/]+/
         urls = urls.collect {|x| x.gsub(rexp, "\\1/#{version}") }
       end
-      baseurl = "https://ajax.googleapis.com/ajax/libs/#{library}/#{version}"
+      baseurl = "#{CDN_URL}/#{library}/#{version}"
       files = urls ? urls.collect {|x| x[baseurl.length..-1] } : nil
       return {
         name:    d[:name],
