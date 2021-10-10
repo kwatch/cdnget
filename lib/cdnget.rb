@@ -57,23 +57,31 @@ module CDNGet
     end
 
     def get(uri)
-      resp = @http.send_request('GET', uri.path, nil, @headers)
-      case resp
-      when Net::HTTPSuccess
-        return resp.body
-      #when HTTPInformation, Net::HTTPRedirection, HTTPClientError, HTTPServerError
-      else
-        raise HttpError.new(resp.code.to_i, resp.message)
-      end
+      resp = request('GET', uri.path, uri.query)
+      return _get_resp_body(resp)
     end
 
     def post(uri, payload)
-      path = uri.path
-      path += "?"+uri.query if uri.query && !uri.query.empty?
-      resp = @http.send_request('POST', path, payload, @headers)
+      resp = request('POST', uri.path, uri.query, payload: payload)
+      return _get_resp_body(resp)
+    end
+
+    def request(meth, path, query=None, payload: nil, headers: nil)
+      path += "?" + query if query
+      if @headers
+        headers ||= {}
+        headers.update(@headers)
+      end
+      resp = @http.send_request(meth, path, payload, headers)
+      return resp
+    end
+
+    def _get_resp_body(resp)
       case resp
-      when Net::HTTPSuccess ; return resp.body
-      else                  ; raise HttpError.new(resp.code.to_i, resp.message)
+      when Net::HTTPSuccess
+        return resp.body
+      else
+        raise HttpError.new(resp.code.to_i, resp.message)
       end
     end
 
