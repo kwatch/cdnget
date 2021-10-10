@@ -222,6 +222,27 @@ urls:
             ok (serr) == "jquery 999.999.999: version not found.\n"
             ok (sout) == ""
 
+        @test("cdnget cdnjs @babel/core")
+        def _(self):
+            sout, serr = _run("cdnjs @babel/core")
+            ok (serr) == "@babel/core: unexpected library name.\n"
+            ok (sout) == ""
+
+        @test("cdnget cdnjs @babel/core <version>")
+        def _(self):
+            sout, serr = _run("cdnjs @babel/core 7.15.5")
+            ok (serr) == "@babel/core: unexpected library name.\n"
+            ok (sout) == ""
+
+        @test("cdnget cdnjs @babel/core <version> <dir>")
+        def _(self):
+            dir = './test.d'
+            at_end(lambda: shutil.rmtree('./test.d'))
+            os.makedirs(dir)
+            sout, serr = _run("cdnjs @babel/core 7.15.5 %s" % dir)
+            ok (serr) == "@babel/core: unexpected library name.\n"
+            ok (sout) == ""
+
 
     with subject("jsdelivr"):
 
@@ -338,18 +359,120 @@ urls:
                 ok ("./test.d/lib2/chibijs@3.0.9/chibi-min.js").is_file()
                 ok ("./test.d/lib2/chibijs@3.0.9/README.md"   ).is_file()
 
-        @test("cdnget jsdelivr non-exist-package", tag="curr")
+        @test("cdnget jsdelivr non-exist-package")
         def _(self):
             sout, serr = _run("jsdelivr txamwxzp5")
             ok (serr) == "txamwxzp5: library not found.\n"
             ok (sout) == ""
 
-        @test("cdnget jsdelivr jquery 999.999.999", tag="curr")
+        @test("cdnget jsdelivr jquery 999.999.999")
         def _(self):
             sout, serr = _run("jsdelivr jquery 999.999.999")
             #ok (serr) == "jquery 999.999.999: version not found.\n"
             ok (serr) == "jquery@999.999.999: library or version not found.\n"
             ok (sout) == ""
+
+        @test("cdnget jsdelivr @babel/core")
+        def _(self):
+            sout, serr = _run("jsdelivr @babel/core")
+            ok (serr) == ""
+            ok (sout.startswith(r"""
+name:     @babel/core
+desc:     Babel compiler core.
+tags:     6to5, babel, classes, const, es6, harmony, let, modules, transpile, transpiler, var, babel-core, compiler
+site:     https://babel.dev/docs/en/next/babel-core
+info:     https://www.jsdelivr.com/package/npm/@babel/core
+license:  MIT
+versions:
+"""[1:])) == True
+
+        @test("cdnget jsdelivr @babel/core <version>")
+        def _(self):
+            sout, serr = _run("jsdelivr @babel/core 7.15.5")
+            ok (serr) == ""
+            ok (sout.startswith(r"""
+name:     @babel/core
+version:  7.15.5
+desc:     Babel compiler core.
+tags:     6to5, babel, classes, const, es6, harmony, let, modules, transpile, transpiler, var, babel-core, compiler
+site:     https://babel.dev/docs/en/next/babel-core
+info:     https://www.jsdelivr.com/package/npm/@babel/core?version=7.15.5
+npmpkg:   https://registry.npmjs.org/@babel%2fcore/-/core-7.15.5.tgz
+default:  /lib/index.min.js
+license:  MIT
+urls:
+"""[1:])) == True
+
+        @test("cdnget jsdelivr @babel/core <version> <dir>")
+        def _(self):
+            dir = './test.d'
+            at_end(lambda: shutil.rmtree('./test.d'))
+            os.makedirs(dir)
+            sout, serr = _run("jsdelivr @babel/core 7.15.5 %s" % dir)
+            ok (serr) == ""
+            ok (sout) == r"""
+{dir}/@babel/core@7.15.5/lib/config/cache-contexts.js ... Done (0 byte)
+{dir}/@babel/core@7.15.5/lib/config/caching.js ... Done (7,327 byte)
+{dir}/@babel/core@7.15.5/lib/config/config-chain.js ... Done (17,871 byte)
+{dir}/@babel/core@7.15.5/lib/config/config-descriptors.js ... Done (6,756 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/configuration.js ... Done (9,975 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/import.js ... Done (165 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/index.js ... Done (1,760 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/index-browser.js ... Done (1,550 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/module-types.js ... Done (2,731 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/package.js ... Done (1,509 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/plugins.js ... Done (6,287 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/types.js ... Done (0 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/utils.js ... Done (856 byte)
+{dir}/@babel/core@7.15.5/lib/config/full.js ... Done (9,211 byte)
+{dir}/@babel/core@7.15.5/lib/config/helpers/config-api.js ... Done (2,593 byte)
+{dir}/@babel/core@7.15.5/lib/config/helpers/environment.js ... Done (227 byte)
+{dir}/@babel/core@7.15.5/lib/config/index.js ... Done (2,462 byte)
+{dir}/@babel/core@7.15.5/lib/config/item.js ... Done (1,802 byte)
+{dir}/@babel/core@7.15.5/lib/config/partial.js ... Done (5,647 byte)
+{dir}/@babel/core@7.15.5/lib/config/pattern-to-regex.js ... Done (1,143 byte)
+{dir}/@babel/core@7.15.5/lib/config/plugin.js ... Done (744 byte)
+{dir}/@babel/core@7.15.5/lib/config/printer.js ... Done (2,893 byte)
+{dir}/@babel/core@7.15.5/lib/config/resolve-targets.js ... Done (1,430 byte)
+{dir}/@babel/core@7.15.5/lib/config/resolve-targets-browser.js ... Done (945 byte)
+{dir}/@babel/core@7.15.5/lib/config/util.js ... Done (887 byte)
+{dir}/@babel/core@7.15.5/lib/config/validation/option-assertions.js ... Done (9,985 byte)
+{dir}/@babel/core@7.15.5/lib/config/validation/options.js ... Done (7,749 byte)
+{dir}/@babel/core@7.15.5/lib/config/validation/plugins.js ... Done (1,982 byte)
+{dir}/@babel/core@7.15.5/lib/config/validation/removed.js ... Done (2,374 byte)
+{dir}/@babel/core@7.15.5/lib/gensync-utils/async.js ... Done (1,775 byte)
+{dir}/@babel/core@7.15.5/lib/gensync-utils/fs.js ... Done (576 byte)
+{dir}/@babel/core@7.15.5/lib/index.js ... Done (5,697 byte)
+{dir}/@babel/core@7.15.5/lib/parse.js ... Done (1,085 byte)
+{dir}/@babel/core@7.15.5/lib/parser/index.js ... Done (2,260 byte)
+{dir}/@babel/core@7.15.5/lib/parser/util/missing-plugin-helper.js ... Done (7,985 byte)
+{dir}/@babel/core@7.15.5/lib/tools/build-external-helpers.js ... Done (4,331 byte)
+{dir}/@babel/core@7.15.5/lib/transform.js ... Done (1,059 byte)
+{dir}/@babel/core@7.15.5/lib/transform-ast.js ... Done (1,257 byte)
+{dir}/@babel/core@7.15.5/lib/transform-file.js ... Done (1,059 byte)
+{dir}/@babel/core@7.15.5/lib/transform-file-browser.js ... Done (692 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/block-hoist-plugin.js ... Done (1,802 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/file/file.js ... Done (5,864 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/file/generate.js ... Done (1,903 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/file/merge-map.js ... Done (5,412 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/index.js ... Done (3,296 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/normalize-file.js ... Done (3,796 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/normalize-opts.js ... Done (1,543 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/plugin-pass.js ... Done (1,035 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/util/clone-deep.js ... Done (453 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/util/clone-deep-browser.js ... Done (599 byte)
+{dir}/@babel/core@7.15.5/LICENSE ... Done (1,106 byte)
+{dir}/@babel/core@7.15.5/package.json ... Done (2,395 byte)
+{dir}/@babel/core@7.15.5/README.md ... Done (404 byte)
+{dir}/@babel/core@7.15.5/src/config/files/index.ts ... Done (735 byte)
+{dir}/@babel/core@7.15.5/src/config/files/index-browser.ts ... Done (2,846 byte)
+{dir}/@babel/core@7.15.5/src/config/resolve-targets.ts ... Done (1,612 byte)
+{dir}/@babel/core@7.15.5/src/config/resolve-targets-browser.ts ... Done (1,074 byte)
+{dir}/@babel/core@7.15.5/src/transform-file.ts ... Done (1,475 byte)
+{dir}/@babel/core@7.15.5/src/transform-file-browser.ts ... Done (716 byte)
+{dir}/@babel/core@7.15.5/src/transformation/util/clone-deep.ts ... Done (223 byte)
+{dir}/@babel/core@7.15.5/src/transformation/util/clone-deep-browser.ts ... Done (500 byte)
+"""[1:].format(dir=dir)
 
 
     with subject("unpkg"):
@@ -467,18 +590,120 @@ urls:
                 ok ("./test.d/lib2/chibijs@3.0.9/chibi-min.js").is_file()
                 ok ("./test.d/lib2/chibijs@3.0.9/README.md"   ).is_file()
 
-        @test("cdnget unpkg non-exist-package", tag="curr")
+        @test("cdnget unpkg non-exist-package")
         def _(self):
             sout, serr = _run("unpkg txamwxzp5")
             ok (serr) == "txamwxzp5: library not found.\n"
             ok (sout) == ""
 
-        @test("cdnget unpkg jquery 999.999.999", tag="curr")
+        @test("cdnget unpkg jquery 999.999.999")
         def _(self):
             sout, serr = _run("unpkg jquery 999.999.999")
             #ok (serr) == "jquery 999.999.999: version not found.\n"
             ok (serr) == "jquery@999.999.999: library or version not found.\n"
             ok (sout) == ""
+
+        @test("cdnget unpkg @babel/core")
+        def _(self):
+            sout, serr = _run("unpkg @babel/core")
+            ok (serr) == ""
+            ok (sout.startswith(r"""
+name:     @babel/core
+desc:     Babel compiler core.
+tags:     6to5, babel, classes, const, es6, harmony, let, modules, transpile, transpiler, var, babel-core, compiler
+site:     https://babel.dev/docs/en/next/babel-core
+info:     https://unpkg.com/browse/@babel/core/
+license:  MIT
+versions:
+"""[1:])) == True
+
+        @test("cdnget unpkg @babel/core <version>")
+        def _(self):
+            sout, serr = _run("unpkg @babel/core 7.15.5")
+            ok (serr) == ""
+            ok (sout.startswith(r"""
+name:     @babel/core
+version:  7.15.5
+desc:     Babel compiler core.
+tags:     6to5, babel, classes, const, es6, harmony, let, modules, transpile, transpiler, var, babel-core, compiler
+site:     https://babel.dev/docs/en/next/babel-core
+info:     https://unpkg.com/browse/@babel/core@7.15.5/
+npmpkg:   https://registry.npmjs.org/@babel%2fcore/-/core-7.15.5.tgz
+default:  /lib/index.min.js
+license:  MIT
+urls:
+"""[1:])) == True
+
+        @test("cdnget unpkg @babel/core <version> <dir>")
+        def _(self):
+            dir = './test.d'
+            at_end(lambda: shutil.rmtree('./test.d'))
+            os.makedirs(dir)
+            sout, serr = _run("unpkg @babel/core 7.15.5 %s" % dir)
+            ok (serr) == ""
+            ok (sout) == r"""
+{dir}/@babel/core@7.15.5/lib/config/cache-contexts.js ... Done (0 byte)
+{dir}/@babel/core@7.15.5/lib/config/caching.js ... Done (7,327 byte)
+{dir}/@babel/core@7.15.5/lib/config/config-chain.js ... Done (17,871 byte)
+{dir}/@babel/core@7.15.5/lib/config/config-descriptors.js ... Done (6,756 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/configuration.js ... Done (9,975 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/import.js ... Done (165 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/index.js ... Done (1,760 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/index-browser.js ... Done (1,550 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/module-types.js ... Done (2,731 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/package.js ... Done (1,509 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/plugins.js ... Done (6,287 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/types.js ... Done (0 byte)
+{dir}/@babel/core@7.15.5/lib/config/files/utils.js ... Done (856 byte)
+{dir}/@babel/core@7.15.5/lib/config/full.js ... Done (9,211 byte)
+{dir}/@babel/core@7.15.5/lib/config/helpers/config-api.js ... Done (2,593 byte)
+{dir}/@babel/core@7.15.5/lib/config/helpers/environment.js ... Done (227 byte)
+{dir}/@babel/core@7.15.5/lib/config/index.js ... Done (2,462 byte)
+{dir}/@babel/core@7.15.5/lib/config/item.js ... Done (1,802 byte)
+{dir}/@babel/core@7.15.5/lib/config/partial.js ... Done (5,647 byte)
+{dir}/@babel/core@7.15.5/lib/config/pattern-to-regex.js ... Done (1,143 byte)
+{dir}/@babel/core@7.15.5/lib/config/plugin.js ... Done (744 byte)
+{dir}/@babel/core@7.15.5/lib/config/printer.js ... Done (2,893 byte)
+{dir}/@babel/core@7.15.5/lib/config/resolve-targets.js ... Done (1,430 byte)
+{dir}/@babel/core@7.15.5/lib/config/resolve-targets-browser.js ... Done (945 byte)
+{dir}/@babel/core@7.15.5/lib/config/util.js ... Done (887 byte)
+{dir}/@babel/core@7.15.5/lib/config/validation/option-assertions.js ... Done (9,985 byte)
+{dir}/@babel/core@7.15.5/lib/config/validation/options.js ... Done (7,749 byte)
+{dir}/@babel/core@7.15.5/lib/config/validation/plugins.js ... Done (1,982 byte)
+{dir}/@babel/core@7.15.5/lib/config/validation/removed.js ... Done (2,374 byte)
+{dir}/@babel/core@7.15.5/lib/gensync-utils/async.js ... Done (1,775 byte)
+{dir}/@babel/core@7.15.5/lib/gensync-utils/fs.js ... Done (576 byte)
+{dir}/@babel/core@7.15.5/lib/index.js ... Done (5,697 byte)
+{dir}/@babel/core@7.15.5/lib/parse.js ... Done (1,085 byte)
+{dir}/@babel/core@7.15.5/lib/parser/index.js ... Done (2,260 byte)
+{dir}/@babel/core@7.15.5/lib/parser/util/missing-plugin-helper.js ... Done (7,985 byte)
+{dir}/@babel/core@7.15.5/lib/tools/build-external-helpers.js ... Done (4,331 byte)
+{dir}/@babel/core@7.15.5/lib/transform.js ... Done (1,059 byte)
+{dir}/@babel/core@7.15.5/lib/transform-ast.js ... Done (1,257 byte)
+{dir}/@babel/core@7.15.5/lib/transform-file.js ... Done (1,059 byte)
+{dir}/@babel/core@7.15.5/lib/transform-file-browser.js ... Done (692 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/block-hoist-plugin.js ... Done (1,802 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/file/file.js ... Done (5,864 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/file/generate.js ... Done (1,903 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/file/merge-map.js ... Done (5,412 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/index.js ... Done (3,296 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/normalize-file.js ... Done (3,796 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/normalize-opts.js ... Done (1,543 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/plugin-pass.js ... Done (1,035 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/util/clone-deep.js ... Done (453 byte)
+{dir}/@babel/core@7.15.5/lib/transformation/util/clone-deep-browser.js ... Done (599 byte)
+{dir}/@babel/core@7.15.5/LICENSE ... Done (1,106 byte)
+{dir}/@babel/core@7.15.5/package.json ... Done (2,395 byte)
+{dir}/@babel/core@7.15.5/README.md ... Done (404 byte)
+{dir}/@babel/core@7.15.5/src/config/files/index.ts ... Done (735 byte)
+{dir}/@babel/core@7.15.5/src/config/files/index-browser.ts ... Done (2,846 byte)
+{dir}/@babel/core@7.15.5/src/config/resolve-targets.ts ... Done (1,612 byte)
+{dir}/@babel/core@7.15.5/src/config/resolve-targets-browser.ts ... Done (1,074 byte)
+{dir}/@babel/core@7.15.5/src/transform-file.ts ... Done (1,475 byte)
+{dir}/@babel/core@7.15.5/src/transform-file-browser.ts ... Done (716 byte)
+{dir}/@babel/core@7.15.5/src/transformation/util/clone-deep.ts ... Done (223 byte)
+{dir}/@babel/core@7.15.5/src/transformation/util/clone-deep-browser.ts ... Done (500 byte)
+"""[1:].format(dir=dir)
 
 
     with subject("google"):
@@ -585,6 +810,27 @@ urls:
                 ok (serr) == ""
                 ok (sout) == ""
                 ok ("./test.d/lib3/jquery/2.2.4/jquery.min.js").is_file()
+
+        @test("cdnget google @babel/core")
+        def _(self):
+            sout, serr = _run("google @babel/core")
+            ok (serr) == "@babel/core: unexpected library name.\n"
+            ok (sout) == ""
+
+        @test("cdnget google @babel/core <version>")
+        def _(self):
+            sout, serr = _run("google @babel/core 7.15.5")
+            ok (serr) == "@babel/core: unexpected library name.\n"
+            ok (sout) == ""
+
+        @test("cdnget google @babel/core <version> <dir>")
+        def _(self):
+            dir = './test.d'
+            at_end(lambda: shutil.rmtree('./test.d'))
+            os.makedirs(dir)
+            sout, serr = _run("google @babel/core 7.15.5 %s" % dir)
+            ok (serr) == "@babel/core: unexpected library name.\n"
+            ok (sout) == ""
 
 
 if __name__ == '__main__':
