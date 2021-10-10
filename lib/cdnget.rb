@@ -786,19 +786,19 @@ END
       if @quiet
         d[:versions].each do |ver|
           buf << "#{ver}\n"
-        end if d[:versions]
+        end unless empty?(d[:versions])
       else
         buf << "name:     #{d[:name]}\n"
-        buf << "desc:     #{d[:desc]}\n"    if d[:desc]
-        buf << "tags:     #{d[:tags]}\n"    if d[:tags]
-        buf << "site:     #{d[:site]}\n"    if d[:site]
-        buf << "info:     #{d[:info]}\n"    if d[:info]
-        buf << "license:  #{d[:license]}\n" if d[:license]
-        buf << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
+        buf << "desc:     #{d[:desc]}\n"    unless empty?(d[:desc])
+        buf << "tags:     #{d[:tags]}\n"    unless empty?(d[:tags])
+        buf << "site:     #{d[:site]}\n"    unless empty?(d[:site])
+        buf << "info:     #{d[:info]}\n"    unless empty?(d[:info])
+        buf << "license:  #{d[:license]}\n" unless empty?(d[:license])
+        buf << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') unless empty?(d[:snippet])
         buf << "versions:\n"
         d[:versions].each do |ver|
           buf << "  - #{ver}\n"
-        end if d[:versions]
+        end unless empty?(d[:versions])
       end
       return buf.join()
     end
@@ -815,18 +815,18 @@ END
       else
         buf << "name:     #{d[:name]}\n"
         buf << "version:  #{d[:version]}\n"
-        buf << "desc:     #{d[:desc]}\n"    if d[:desc]
-        buf << "tags:     #{d[:tags]}\n"    if d[:tags]
-        buf << "site:     #{d[:site]}\n"    if d[:site]
-        buf << "info:     #{d[:info]}\n"    if d[:info]
-        buf << "npmpkg:   #{d[:npmpkg]}\n"  if d[:npmpkg]
-        buf << "default:  #{d[:default]}\n" if d[:default]
-        buf << "license:  #{d[:license]}\n" if d[:license]
-        buf << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
-        buf << "urls:\n"  if d[:urls]
+        buf << "desc:     #{d[:desc]}\n"    unless empty?(d[:desc])
+        buf << "tags:     #{d[:tags]}\n"    unless empty?(d[:tags])
+        buf << "site:     #{d[:site]}\n"    unless empty?(d[:site])
+        buf << "info:     #{d[:info]}\n"    unless empty?(d[:info])
+        buf << "npmpkg:   #{d[:npmpkg]}\n"  unless empty?(d[:npmpkg])
+        buf << "default:  #{d[:default]}\n" unless empty?(d[:default])
+        buf << "license:  #{d[:license]}\n" unless empty?(d[:license])
+        buf << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') unless empty?(d[:snippet])
+        buf << "urls:\n" unless empty?(d[:urls])
         d[:urls].each do |url|
           buf << "  - #{url}\n"
-        end if d[:urls]
+        end unless empty?(d[:urls])
       end
       return buf.join()
     end
@@ -836,6 +836,12 @@ END
       version = cdn.latest_version(library) if version == 'latest'
       cdn.download(library, version, basedir, quiet: @quiet)
       return nil
+    end
+
+    private
+
+    def empty?(x)
+      return x.nil? || x.empty?
     end
 
   end
