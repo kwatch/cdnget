@@ -295,13 +295,16 @@ class Base(object):
                          re.sub(r'js$', '.js', library))
                 raise CommandError("%s: library not found (maybe '%s'?)" % (library, maybe))
 
+    LIBRARY_REXP = re.compile(r'^[-.\w]+$')
+    VERSION_REXP = re.compile(r'^\d+(\.\d+)+([-.\w]+)?$')
+
     def validate(self, library, version):
         if library:
-            if not re.match(r'^[-.\w]+$', library):
-                raise ValueError("%r: unexpected library name.")
+            if not self.LIBRARY_REXP.match(library):
+                raise ValueError("%s: unexpected library name." % library)
         if version:
-            if not re.match(r'^\d+(\.\d+)+([-.\w]+)?$', version):
-                raise ValueError("%r: unexpected version number." % version)
+            if not self.VERSION_REXP.match(version):
+                raise ValueError("%s: unexpected version number." % version)
 
     def latest_version(self, library):
         self.validate(library, None)
