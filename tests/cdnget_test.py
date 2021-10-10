@@ -47,7 +47,7 @@ google      # https://developers.google.com/speed/libraries/
         @test("cdnget -h, --help")
         def _(self):
             expected = r"""
-cdnget.py  -- download files from public CDN (cdnjs/jsdelivr/unpkg/google)
+cdnget.py -- download JS/CSS files from public CDN (cdnjs/jsdelivr/unpkg/google)
 
 Usage: cdnget.py [<options>] [<CDN> [<library> [<version> [<directory>]]]]
 
@@ -58,13 +58,13 @@ Options:
         --debug       : (debug mode)
 
 Example:
-    $ cdnget.py                             # list public CDN names
-    $ cdnget.py [-q] cdnjs                  # list libraries (except jsdelivr/unpkg)
-    $ cdnget.py [-q] cdnjs 'jquery*'        # search libraries
-    $ cdnget.py [-q] cdnjs jquery           # list versions
-    $ cdnget.py [-q] cdnjs jquery latest    # show latest version
-    $ cdnget.py [-q] cdnjs jquery 2.2.4     # list files
-    $ mkdir -p static/lib                  # create a directory
+    $ cdnget.py                            # list public CDN names
+    $ cdnget.py [-q] cdnjs                 # list libraries (except jsdelivr/unpkg)
+    $ cdnget.py [-q] cdnjs 'jquery*'       # search libraries
+    $ cdnget.py [-q] cdnjs jquery          # list versions
+    $ cdnget.py [-q] cdnjs jquery latest   # show latest version
+    $ cdnget.py [-q] cdnjs jquery 2.2.4    # list files
+    $ mkdir -p static/lib                 # create a directory
     $ cdnget.py [-q] cdnjs jquery 2.2.4 /static/lib  # download files
     static/lib/jquery/2.2.4/jquery.js ... Done (257,551 byte)
     static/lib/jquery/2.2.4/jquery.min.js ... Done (85,578 byte)
