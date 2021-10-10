@@ -301,10 +301,10 @@ class Base(object):
     def validate(self, library, version):
         if library:
             if not self.LIBRARY_REXP.match(library):
-                raise ValueError("%s: unexpected library name." % library)
+                raise CommandError("%s: unexpected library name." % library)
         if version:
             if not self.VERSION_REXP.match(version):
-                raise ValueError("%s: unexpected version number." % version)
+                raise CommandError("%s: unexpected version number." % version)
 
     def npmpkg_url(self, library, version):
         lib = library.replace('/', '%2f')
