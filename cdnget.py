@@ -398,6 +398,7 @@ class JSDelivr(Base):
         "x-algo""lia-app""lication-id": "OFCNC""OG2CU",
         "x-algo""lia-api""-key": "f54e21fa3a2""a0160595bb05""8179bfb1e",
     }
+    LIBRARY_REXP = re.compile(r'^([-.\w]+|@[-\w]+\/[-.\w]+)$')
 
     def list(self):
         return None    # None means that this CDN can't list libraries without pattern
@@ -422,7 +423,7 @@ class JSDelivr(Base):
 
     def find(self, library):
         self.validate(library, None)
-        url = "https://ofcncog2cu-dsn.algolia.net/1/indexes/npm-search/%s" % (library,)
+        url = "https://ofcncog2cu-dsn.algolia.net/1/indexes/npm-search/%s" % library.replace('/', '%2f')
         try:
             resp = urlopen(Request(url, None, self.HEADERS))
             jstr = resp.read()
@@ -489,6 +490,7 @@ class Unpkg(Base):
     SITE_URL = "https://unpkg.com/"
     #API_URL  = "https://www.npmjs.com"
     API_URL  = "https://api.npms.io/v2"
+    LIBRARY_REXP = re.compile(r'^([-.\w]+|@[-\w]+\/[-.\w]+)$')
 
     def http_get(self, url):
         #req = Request(url, None, {"x-spiferack": "1"})
@@ -517,7 +519,7 @@ class Unpkg(Base):
 
     def find(self, library):
         self.validate(library, None)
-        url  = "%s/package/%s" % (self.API_URL, library)
+        url  = "%s/package/%s" % (self.API_URL, library.replace('/', '%2f'))
         jstr = self.fetch(url, library)  # 403 Forbidden. Why?
         jdata = json.loads(jstr)
         _debug_print(jdata)
