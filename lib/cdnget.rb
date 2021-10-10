@@ -313,6 +313,7 @@ module CDNGet
     SITE_URL = "https://www.jsdelivr.com/"
     #API_URL  = "https://api.jsdelivr.com/v1/jsdelivr/libraries"
     API_URL  = "https://data.jsdelivr.com/v1"
+    CDN_URL  = "https://cdn.jsdelivr.net/npm"
     HEADERS = {
       "x-algo""lia-app""lication-id"=>"OFCNC""OG2CU",
       "x-algo""lia-api""-key"=>"f54e21fa3a2""a0160595bb05""8179bfb1e",
@@ -382,7 +383,7 @@ module CDNGet
       end
       jdata   = JSON.load(json)
       files   = jdata["files"].collect {|d| d["name"] }
-      baseurl = "https://cdn.jsdelivr.net/npm/#{library}@#{version}"
+      baseurl = "#{CDN_URL}/#{library}@#{version}"
       _debug_print(jdata)
       #
       dict = find(library)
