@@ -754,8 +754,6 @@ Example:
         if opt('debug'):
             _debug_mode = True
         #
-        self.validate(item_at(args, 1), item_at(args, 2))
-        #
         n = len(args)
         if n == 0:
             return self.do_list_cdns()
@@ -777,14 +775,6 @@ Example:
             return ""
         else:
             raise CommandError("%r: Too many arguments." % args[4])
-
-    def validate(self, library, version):
-        if library and '*' not in library:
-            if not re.match(r'^[-.\w]+$', library):
-                raise CommandError("%s: Unexpected library name." % library)
-        if version:
-            if not re.match(r'^[-.\w]+$', version):
-                raise CommandError("%s: Unexpected version number." % version)
 
     def parse_cmdopts(self, cmdargs, short_opts, long_opts):
         options = {}
