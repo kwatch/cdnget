@@ -1085,7 +1085,281 @@ END
   end
 
 
-  topic "cdnget CDN bulma 0.9.3 <dir> (containing '.DS_Store')" do
+  topic "cdnget <CDN> @babel/core" do
+
+    spec "(cdnjs) raises error." do
+      pr = proc { CDNGet::Main.new("cdnget").run("cdnjs", "@babel/core") }
+      ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
+    end
+
+    spec "(jsdelivr) show details of package." do
+      output = CDNGet::Main.new("cdnget").run("jsdelivr", "@babel/core")
+      ok {output}.start_with? <<'END'
+name:     @babel/core
+desc:     Babel compiler core.
+tags:     6to5, babel, classes, const, es6, harmony, let, modules, transpile, transpiler, var, babel-core, compiler
+site:     https://babel.dev/docs/en/next/babel-core
+info:     https://www.jsdelivr.com/package/npm/@babel/core
+license:  MIT
+versions:
+END
+      ok {output}.end_with? <<'END'
+  - 7.0.0-beta.33
+  - 7.0.0-beta.32
+  - 7.0.0-beta.31
+  - 7.0.0-beta.5
+  - 7.0.0-beta.4
+  - 6.0.0-bridge.1
+END
+    end
+
+    spec "(unpkg) show details of package." do
+      output = CDNGet::Main.new("cdnget").run("unpkg", "@babel/core")
+      ok {output}.start_with? <<'END'
+name:     @babel/core
+desc:     Babel compiler core.
+tags:     6to5, babel, classes, const, es6, harmony, let, modules, transpile, transpiler, var, babel-core, compiler
+site:     https://babel.dev/docs/en/next/babel-core
+info:     https://unpkg.com/browse/@babel/core/
+license:  MIT
+versions:
+END
+      ok {output}.end_with? <<'END'
+  - 7.0.0-beta.33
+  - 7.0.0-beta.32
+  - 7.0.0-beta.31
+  - 7.0.0-beta.5
+  - 7.0.0-beta.4
+  - 6.0.0-bridge.1
+END
+    end
+
+    spec "(google) raises error." do
+      pr = proc { CDNGet::Main.new("cdnget").run("google", "@babel/core") }
+      ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
+    end
+
+  end
+
+
+  topic "cdnget <CDN> @babel/core <version>"do
+
+    spec "(cdnjs) raises error." do
+      pr = proc { CDNGet::Main.new("cdnget").run("cdnjs", "@babel/core", "7.15.5") }
+      ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
+    end
+
+    spec "(jsdelivr) lists files." do
+      output = CDNGet::Main.new("cdnget").run("jsdelivr", "@babel/core", "7.15.5")
+      ok {output}.start_with? <<'END'
+name:     @babel/core
+version:  7.15.5
+desc:     Babel compiler core.
+tags:     6to5, babel, classes, const, es6, harmony, let, modules, transpile, transpiler, var, babel-core, compiler
+site:     https://babel.dev/docs/en/next/babel-core
+info:     https://www.jsdelivr.com/package/npm/@babel/core?version=7.15.5
+npmpkg:   https://registry.npmjs.org/@babel%2fcore/-//core-7.15.5.tgz
+default:  /lib/index.min.js
+license:  MIT
+urls:
+  - https://cdn.jsdelivr.net/npm/@babel/core@7.15.5/lib/config/cache-contexts.js
+  - https://cdn.jsdelivr.net/npm/@babel/core@7.15.5/lib/config/caching.js
+  - https://cdn.jsdelivr.net/npm/@babel/core@7.15.5/lib/config/config-chain.js
+  - https://cdn.jsdelivr.net/npm/@babel/core@7.15.5/lib/config/config-descriptors.js
+END
+    end
+
+    spec "(unpkg) lists files" do
+      output = CDNGet::Main.new("cdnget").run("unpkg", "@babel/core", "7.15.5")
+      ok {output}.start_with? <<'END'
+name:     @babel/core
+version:  7.15.5
+desc:     Babel compiler core.
+tags:     6to5, babel, classes, const, es6, harmony, let, modules, transpile, transpiler, var, babel-core, compiler
+site:     https://babel.dev/docs/en/next/babel-core
+info:     https://unpkg.com/browse/@babel/core@7.15.5/
+npmpkg:   https://registry.npmjs.org/@babel%2fcore/-//core-7.15.5.tgz
+license:  MIT
+urls:
+  - https://unpkg.com/@babel/core@7.15.5/LICENSE
+  - https://unpkg.com/@babel/core@7.15.5/README.md
+  - https://unpkg.com/@babel/core@7.15.5/lib/config/cache-contexts.js
+  - https://unpkg.com/@babel/core@7.15.5/lib/config/caching.js
+  - https://unpkg.com/@babel/core@7.15.5/lib/config/config-chain.js
+END
+    end
+
+    spec "(google) raises error." do
+      pr = proc { CDNGet::Main.new("cdnget").run("google", "@babel/core", "7.15.5") }
+      ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
+    end
+
+  end
+
+
+  topic "cdnget <CDN> @babel/core <version> <dir>" do
+
+    before do
+      @tmpdir = "tmpdir1"
+      Dir.mkdir @tmpdir
+    end
+
+    after do
+      FileUtils.rm_rf @tmpdir
+    end
+
+    spec "(cdnjs) raises error." do
+      pr = proc { CDNGet::Main.new("cdnget").run("cdnjs", "@babel/core", "7.15.5", @tmpdir) }
+      ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
+    end
+
+    spec "(jsdelivr) download files." do
+      sout, serr = capture_sio do
+        CDNGet::Main.new("cdnget").run("jsdelivr", "@babel/core", "7.15.5", @tmpdir)
+      end
+      ok {sout} == <<"END"
+#{@tmpdir}/@babel/core@7.15.5/lib/config/cache-contexts.js ... Done (0 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/caching.js ... Done (7,327 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/config-chain.js ... Done (17,871 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/config-descriptors.js ... Done (6,756 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/configuration.js ... Done (9,975 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/import.js ... Done (165 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/index.js ... Done (1,760 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/index-browser.js ... Done (1,550 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/module-types.js ... Done (2,731 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/package.js ... Done (1,509 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/plugins.js ... Done (6,287 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/types.js ... Done (0 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/utils.js ... Done (856 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/full.js ... Done (9,211 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/helpers/config-api.js ... Done (2,593 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/helpers/environment.js ... Done (227 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/index.js ... Done (2,462 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/item.js ... Done (1,802 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/partial.js ... Done (5,647 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/pattern-to-regex.js ... Done (1,143 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/plugin.js ... Done (744 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/printer.js ... Done (2,893 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/resolve-targets.js ... Done (1,430 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/resolve-targets-browser.js ... Done (945 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/util.js ... Done (887 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/validation/option-assertions.js ... Done (9,985 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/validation/options.js ... Done (7,749 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/validation/plugins.js ... Done (1,982 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/validation/removed.js ... Done (2,374 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/gensync-utils/async.js ... Done (1,775 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/gensync-utils/fs.js ... Done (576 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/index.js ... Done (5,697 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/parse.js ... Done (1,085 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/parser/index.js ... Done (2,260 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/parser/util/missing-plugin-helper.js ... Done (7,985 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/tools/build-external-helpers.js ... Done (4,331 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transform.js ... Done (1,059 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transform-ast.js ... Done (1,257 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transform-file.js ... Done (1,059 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transform-file-browser.js ... Done (692 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/block-hoist-plugin.js ... Done (1,802 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/file/file.js ... Done (5,864 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/file/generate.js ... Done (1,903 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/file/merge-map.js ... Done (5,412 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/index.js ... Done (3,296 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/normalize-file.js ... Done (3,796 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/normalize-opts.js ... Done (1,543 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/plugin-pass.js ... Done (1,035 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/util/clone-deep.js ... Done (453 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/util/clone-deep-browser.js ... Done (599 byte)
+#{@tmpdir}/@babel/core@7.15.5/LICENSE ... Done (1,106 byte)
+#{@tmpdir}/@babel/core@7.15.5/package.json ... Done (2,395 byte)
+#{@tmpdir}/@babel/core@7.15.5/README.md ... Done (404 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/config/files/index.ts ... Done (735 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/config/files/index-browser.ts ... Done (2,846 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/config/resolve-targets.ts ... Done (1,612 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/config/resolve-targets-browser.ts ... Done (1,074 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/transform-file.ts ... Done (1,475 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/transform-file-browser.ts ... Done (716 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/transformation/util/clone-deep.ts ... Done (223 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/transformation/util/clone-deep-browser.ts ... Done (500 byte)
+END
+    end
+
+    spec "(unpkg) download files" do
+      sout, serr = capture_sio do
+        CDNGet::Main.new("cdnget").run("unpkg", "@babel/core", "7.15.5", @tmpdir)
+      end
+      ok {sout} == <<"END"
+#{@tmpdir}/@babel/core@7.15.5/LICENSE ... Done (1,106 byte)
+#{@tmpdir}/@babel/core@7.15.5/README.md ... Done (404 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/cache-contexts.js ... Done (0 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/caching.js ... Done (7,327 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/config-chain.js ... Done (17,871 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/config-descriptors.js ... Done (6,756 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/configuration.js ... Done (9,975 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/import.js ... Done (165 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/index-browser.js ... Done (1,550 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/index.js ... Done (1,760 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/module-types.js ... Done (2,731 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/package.js ... Done (1,509 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/plugins.js ... Done (6,287 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/types.js ... Done (0 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/files/utils.js ... Done (856 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/full.js ... Done (9,211 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/helpers/config-api.js ... Done (2,593 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/helpers/environment.js ... Done (227 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/index.js ... Done (2,462 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/item.js ... Done (1,802 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/partial.js ... Done (5,647 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/pattern-to-regex.js ... Done (1,143 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/plugin.js ... Done (744 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/printer.js ... Done (2,893 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/resolve-targets-browser.js ... Done (945 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/resolve-targets.js ... Done (1,430 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/util.js ... Done (887 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/validation/option-assertions.js ... Done (9,985 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/validation/options.js ... Done (7,749 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/validation/plugins.js ... Done (1,982 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/config/validation/removed.js ... Done (2,374 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/gensync-utils/async.js ... Done (1,775 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/gensync-utils/fs.js ... Done (576 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/index.js ... Done (5,697 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/parse.js ... Done (1,085 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/parser/index.js ... Done (2,260 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/parser/util/missing-plugin-helper.js ... Done (7,985 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/tools/build-external-helpers.js ... Done (4,331 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transform-ast.js ... Done (1,257 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transform-file-browser.js ... Done (692 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transform-file.js ... Done (1,059 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transform.js ... Done (1,059 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/block-hoist-plugin.js ... Done (1,802 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/file/file.js ... Done (5,864 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/file/generate.js ... Done (1,903 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/file/merge-map.js ... Done (5,412 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/index.js ... Done (3,296 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/normalize-file.js ... Done (3,796 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/normalize-opts.js ... Done (1,543 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/plugin-pass.js ... Done (1,035 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/util/clone-deep-browser.js ... Done (599 byte)
+#{@tmpdir}/@babel/core@7.15.5/lib/transformation/util/clone-deep.js ... Done (453 byte)
+#{@tmpdir}/@babel/core@7.15.5/package.json ... Done (2,395 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/config/files/index-browser.ts ... Done (2,846 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/config/files/index.ts ... Done (735 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/config/resolve-targets-browser.ts ... Done (1,074 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/config/resolve-targets.ts ... Done (1,612 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/transform-file-browser.ts ... Done (716 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/transform-file.ts ... Done (1,475 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/transformation/util/clone-deep-browser.ts ... Done (500 byte)
+#{@tmpdir}/@babel/core@7.15.5/src/transformation/util/clone-deep.ts ... Done (223 byte)
+END
+    end
+
+    spec "(google) raises error." do
+      pr = proc { CDNGet::Main.new("cdnget").run("google", "@babel/core", "7.15.5", @tmpdir) }
+      ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
+    end
+
+  end
+
+
+  topic "cdnget <CDN> bulma 0.9.3 <dir> (containing '.DS_Store')" do
 
     before do
       @tmpdir = "tmpdir1"
