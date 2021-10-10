@@ -8,6 +8,8 @@ require 'cdnget'
 
 Oktest.scope do
 
+  CDN_NAMES = ['cdnjs', 'jsdelivr', 'unpkg', 'google']
+
 
   topic 'cdnget [-h][--help]' do
 
@@ -49,21 +51,13 @@ END
   end
 
 
-  topic 'cdnget CDN' do
+  topic 'cdnget <CDN>' do
 
     spec "(cdnjs) lists librareis." do
       actual = CDNGet::Main.new().run("cdnjs")
       ok {actual} =~ /^jquery                # JavaScript library for DOM operations$/
       ok {actual} =~ /^angular\.js            # AngularJS is an MVC framework for building web applications\./
       ok {actual} =~ /^ember\.js              # Ember is a JavaScript framework for creating ambitious web applications that eliminates boilerplate and provides a standard application architecture\./
-    end
-
-    spec "(google) lists librareis." do
-      actual = CDNGet::Main.new().run("google")
-      ok {actual} =~ /^jquery /
-      #ok {actual} =~ /^angularjs /
-      ok {actual} =~ /^swfobject /
-      ok {actual} =~ /^webfont /
     end
 
     spec "(jsdelivr) lists librareis." do
@@ -78,10 +72,18 @@ END
                      "unpkg: cannot list libraries; please specify pattern such as 'jquery*'.")
     end
 
+    spec "(google) lists librareis." do
+      actual = CDNGet::Main.new().run("google")
+      ok {actual} =~ /^jquery /
+      #ok {actual} =~ /^angularjs /
+      ok {actual} =~ /^swfobject /
+      ok {actual} =~ /^webfont /
+    end
+
   end
 
 
-  topic 'cdnget CDN "jquery*"' do
+  topic 'cdnget <CDN> <pattern> (#1)' do
 
     spec "(cdnjs) lists libraries starting to pattern." do
       actual = CDNGet::Main.new().run("cdnjs", "jquery*")
@@ -91,13 +93,6 @@ END
       ok {actual} !~ /^angular/
       ok {actual} !~ /^twitter-bootstrap/
       ok {actual} !~ /^ember\.js/
-    end
-
-    spec "(google) lists libraries starting to pattern." do
-      actual = CDNGet::Main.new().run("google", "jquery*")
-      ok {actual} =~ /^jquery                #/
-      ok {actual} =~ /^jqueryui              #/   # match
-      ok {actual} !~ /^angularjs/
     end
 
     spec "(jsdelivr) lists libraries starting to pattern." do
@@ -116,10 +111,17 @@ END
       ok {actual} !~ /^bootstrap/
     end
 
+    spec "(google) lists libraries starting to pattern." do
+      actual = CDNGet::Main.new().run("google", "jquery*")
+      ok {actual} =~ /^jquery                #/
+      ok {actual} =~ /^jqueryui              #/   # match
+      ok {actual} !~ /^angularjs/
+    end
+
   end
 
 
-  topic 'cdnget cdnjs "*jquery"' do
+  topic 'cdnget <CDN> <pattern> (#2)' do
 
     spec "(cdnjs) lists libraries ending to pattern." do
       actual = CDNGet::Main.new().run("cdnjs", "*jquery")
@@ -129,13 +131,6 @@ END
       ok {actual} !~ /^angular/
       ok {actual} !~ /^twitter-bootstrap/
       ok {actual} !~ /^ember\.js/
-    end
-
-    spec "(google) lists libraries ending to pattern." do
-      actual = CDNGet::Main.new().run("google", "*jquery")
-      ok {actual} =~ /^jquery                #/
-      ok {actual} !~ /^jqueryui              #/   # not match
-      ok {actual} !~ /^angularjs/
     end
 
     spec "(jsdelivr) lists libraries ending to pattern." do
@@ -154,10 +149,17 @@ END
       ok {actual} !~ /^bootstrap/
     end
 
+    spec "(google) lists libraries ending to pattern." do
+      actual = CDNGet::Main.new().run("google", "*jquery")
+      ok {actual} =~ /^jquery                #/
+      ok {actual} !~ /^jqueryui              #/   # not match
+      ok {actual} !~ /^angularjs/
+    end
+
   end
 
 
-  topic 'cdnget cdnjs "*jquery*"' do
+  topic 'cdnget <CDN> <pattern> (#3)' do
 
     spec "(cdnjs) lists libraries including pattern." do
       actual = CDNGet::Main.new().run("cdnjs", "*jquery*")
@@ -167,14 +169,6 @@ END
       ok {actual} !~ /^angular/
       ok {actual} !~ /^twitter-bootstrap/
       ok {actual} !~ /^ember\.js/
-    end
-
-    spec "(google) lists libraries including pattern." do
-      actual = CDNGet::Main.new().run("google", "*o*")
-      ok {actual} !~ /^jquery /
-      ok {actual} !~ /^angularjs /
-      ok {actual} =~ /^mootools /
-      ok {actual} =~ /^swfobject /
     end
 
     spec "(jsdelivr) lists libraries including pattern." do
@@ -196,10 +190,18 @@ END
       ok {actual} !~ /^bootstrap/
     end
 
+    spec "(google) lists libraries including pattern." do
+      actual = CDNGet::Main.new().run("google", "*o*")
+      ok {actual} !~ /^jquery /
+      ok {actual} !~ /^angularjs /
+      ok {actual} =~ /^mootools /
+      ok {actual} =~ /^swfobject /
+    end
+
   end
 
 
-  topic "cdnget CDN jquery" do
+  topic "cdnget <CDN> <library> (exists)" do
 
     spec "(cdnjs) lists versions of library." do
       actual = CDNGet::Main.new().run("cdnjs", "jquery")
@@ -210,27 +212,6 @@ tags:     jquery, library, ajax, framework, toolkit, popular
 site:     http://jquery.com/
 info:     https://cdnjs.com/libraries/jquery
 license:  MIT
-versions:
-END
-      ok {actual}.start_with?(text1)
-      text2 = <<END
-  - 1.3.2
-  - 1.3.1
-  - 1.3.0
-  - 1.2.6
-  - 1.2.3
-END
-      ok {actual}.end_with?(text2)
-      ok {actual} =~ /^  - 2\.2\.0$/
-      ok {actual} =~ /^  - 1\.12\.0$/
-    end
-
-    spec "(google) lists versions of library." do
-      actual = CDNGet::Main.new().run("google", "jquery")
-      text1 = <<END
-name:     jquery
-site:     http://jquery.com/
-info:     https://developers.google.com/speed/libraries/#jquery
 versions:
 END
       ok {actual}.start_with?(text1)
@@ -295,17 +276,38 @@ END
       ok {actual} =~ /^  - 1\.12\.0$/
     end
 
+    spec "(google) lists versions of library." do
+      actual = CDNGet::Main.new().run("google", "jquery")
+      text1 = <<END
+name:     jquery
+site:     http://jquery.com/
+info:     https://developers.google.com/speed/libraries/#jquery
+versions:
+END
+      ok {actual}.start_with?(text1)
+      text2 = <<END
+  - 1.3.2
+  - 1.3.1
+  - 1.3.0
+  - 1.2.6
+  - 1.2.3
+END
+      ok {actual}.end_with?(text2)
+      ok {actual} =~ /^  - 2\.2\.0$/
+      ok {actual} =~ /^  - 1\.12\.0$/
+    end
+
+  end
+
+
+  topic "cdnget <CDN> <library> (not exist)" do
+
     spec "(cdnjs) raises error when library name is wrong." do
       pr = proc { CDNGet::Main.new().run("cdnjs", "jquery-ui") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
       #
       pr = proc { CDNGet::Main.new().run("cdnjs", "emberjs", "2.2.1") }
       ok {pr}.raise?(CDNGet::CommandError, "emberjs: Library not found (maybe 'ember.js'?).")
-    end
-
-    spec "(google) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("google", "jquery-ui") }
-      ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
     end
 
     spec "(jsdelivr) raises error when library name is wrong." do
@@ -318,10 +320,15 @@ END
       ok {pr}.raise?(CDNGet::CommandError, "jquery-foobar: Library not found.")
     end
 
+    spec "(google) raises error when library name is wrong." do
+      pr = proc { CDNGet::Main.new().run("google", "jquery-ui") }
+      ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
+    end
+
   end
 
 
-  topic "cdnget cdnjs jquery 2.2.0" do
+  topic "cdnget <CDN> <library> <version> (only files)" do
 
     spec "(cdnjs) lists files." do
       expected = <<END
@@ -338,19 +345,6 @@ urls:
   - https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.map
 END
       actual = CDNGet::Main.new().run("cdnjs", "jquery", "2.2.0")
-      ok {actual} == expected
-    end
-
-    spec "(google) lists files." do
-      expected = <<END
-name:     jquery
-version:  2.2.0
-site:     http://jquery.com/
-info:     https://developers.google.com/speed/libraries/#jquery
-urls:
-  - https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js
-END
-      actual = CDNGet::Main.new().run("google", "jquery", "2.2.0")
       ok {actual} == expected
     end
 
@@ -516,6 +510,24 @@ END
       ok {actual} == expected
     end
 
+    spec "(google) lists files." do
+      expected = <<END
+name:     jquery
+version:  2.2.0
+site:     http://jquery.com/
+info:     https://developers.google.com/speed/libraries/#jquery
+urls:
+  - https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js
+END
+      actual = CDNGet::Main.new().run("google", "jquery", "2.2.0")
+      ok {actual} == expected
+    end
+
+  end
+
+
+  topic "cdnget <CDN> <library> <version> (containing subdirectory)" do
+
     spec "(cdnjs) lists files containing subdirectory." do
       expected = <<END
 name:     jquery-jcrop
@@ -543,17 +555,17 @@ END
       skip_when true, "no libraries containing subdirectory"
     end
 
+  end
+
+
+  topic "cdnget <CDN> <not-existing-library> <version>" do
+
     spec "(cdnjs) raises error when library name is wrong." do
       pr = proc { CDNGet::Main.new().run("cdnjs", "jquery-ui", "1.9.2") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
       #
       pr = proc { CDNGet::Main.new().run("cdnjs", "emberjs", "2.2.1") }
       ok {pr}.raise?(CDNGet::CommandError, "emberjs: Library not found (maybe 'ember.js'?).")
-    end
-
-    spec "(google) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("google", "jquery-ui", "1.9.2") }
-      ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
     end
 
     spec "(jsdelivr) raises error when library name is wrong." do
@@ -566,10 +578,15 @@ END
       ok {pr}.raise?(CDNGet::CommandError, "jquery-foobar: Library not found.")
     end
 
+    spec "(google) raises error when library name is wrong." do
+      pr = proc { CDNGet::Main.new().run("google", "jquery-ui", "1.9.2") }
+      ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
+    end
+
   end
 
 
-  topic "cdnget CDN jquery 2.2.0 dir" do
+  topic "cdnget <CDN> <library> <version> <dir> (only files)" do
 
     before do
       @tmpdir = "tmpdir1"
@@ -587,36 +604,6 @@ END
       yield sout, serr
     end
 
-    def _do_download_test2(cdn_code, library="jquery-jcrop", version="0.9.12")
-      sout, serr = capture_sio() do
-        actual = CDNGet::Main.new().run(cdn_code, library, version, @tmpdir)
-      end
-      yield sout, serr
-    end
-
-    def _do_download_test3(cdn_code, libname, version, expected)
-      tmpdir = @tmpdir
-      path = "#{tmpdir}/#{libname}/#{version}"
-      # 1st
-      sout, serr = capture_sio() do
-        actual = CDNGet::Main.new().run(cdn_code, libname, version, tmpdir)
-      end
-      ok {serr} == ""
-      ok {sout} == expected
-      # 2nd
-      sout, serr = capture_sio() do
-        actual = CDNGet::Main.new().run(cdn_code, libname, version, tmpdir)
-      end
-      ok {serr} == ""
-      ok {sout} == expected.gsub(/(\(Created\))?\n/) {
-        if $1
-          "(Already exists)\n"
-        else
-          " (Unchanged)\n"
-        end
-      }
-    end
-
     spec "(cdnjs) downloads files into dir." do
       tmpdir = @tmpdir
       _do_download_test1("cdnjs", "jquery", "2.2.0") do |sout, serr|
@@ -627,16 +614,6 @@ END
 #{tmpdir}/jquery/2.2.0/jquery.js ... Done (258,388 byte)
 #{tmpdir}/jquery/2.2.0/jquery.min.js ... Done (85,589 byte)
 #{tmpdir}/jquery/2.2.0/jquery.min.map ... Done (129,544 byte)
-END
-      end
-    end
-
-    spec "(google) downloads files into dir." do
-      tmpdir = @tmpdir
-      _do_download_test1("google", "jquery", "2.2.0") do |sout, serr|
-        ok {"#{tmpdir}/jquery/2.2.0/jquery.min.js" }.file_exist?
-        ok {sout} == <<END
-#{tmpdir}/jquery/2.2.0/jquery.min.js ... Done (85,589 byte)
 END
       end
     end
@@ -689,6 +666,37 @@ END
       end
     end
 
+    spec "(google) downloads files into dir." do
+      tmpdir = @tmpdir
+      _do_download_test1("google", "jquery", "2.2.0") do |sout, serr|
+        ok {"#{tmpdir}/jquery/2.2.0/jquery.min.js" }.file_exist?
+        ok {sout} == <<END
+#{tmpdir}/jquery/2.2.0/jquery.min.js ... Done (85,589 byte)
+END
+      end
+    end
+
+  end
+
+
+  topic "cdnget <CDN> <library> <version> <dir> (containing subdirectory)" do
+
+    before do
+      @tmpdir = "tmpdir1"
+      Dir.mkdir(@tmpdir)
+    end
+
+    after do
+      FileUtils.rm_rf(@tmpdir)
+    end
+
+    def _do_download_test2(cdn_code, library="jquery-jcrop", version="0.9.12")
+      sout, serr = capture_sio() do
+        actual = CDNGet::Main.new().run(cdn_code, library, version, @tmpdir)
+      end
+      yield sout, serr
+    end
+
     spec "(cdnjs) downloads files (containing subdir) into dir." do
       tmpdir = @tmpdir
       _do_download_test2("cdnjs", "jquery-jcrop", "0.9.12") do |sout, serr|
@@ -711,10 +719,6 @@ END
 #{tmpdir}/jquery-jcrop/0.9.12/js/jquery.min.js ... Done (93,068 byte)
 END
       end
-    end
-
-    spec "(google) downloads files (containing subdir) into dir." do
-      skip_when true, "no libraries containing subdirectory"
     end
 
     spec "(jsdelivr) downloads files (containing subdir) into dir." do
@@ -814,6 +818,47 @@ END
       end
     end
 
+    spec "(google) downloads files (containing subdir) into dir." do
+      skip_when true, "no libraries containing subdirectory"
+    end
+
+  end
+
+
+  topic "cdnget <CDN> <library> <version> <dir> (not override existing files)" do
+
+    before do
+      @tmpdir = "tmpdir1"
+      Dir.mkdir(@tmpdir)
+    end
+
+    after do
+      FileUtils.rm_rf(@tmpdir)
+    end
+
+    def _do_download_test3(cdn_code, libname, version, expected)
+      tmpdir = @tmpdir
+      path = "#{tmpdir}/#{libname}/#{version}"
+      # 1st
+      sout, serr = capture_sio() do
+        actual = CDNGet::Main.new().run(cdn_code, libname, version, tmpdir)
+      end
+      ok {serr} == ""
+      ok {sout} == expected
+      # 2nd
+      sout, serr = capture_sio() do
+        actual = CDNGet::Main.new().run(cdn_code, libname, version, tmpdir)
+      end
+      ok {serr} == ""
+      ok {sout} == expected.gsub(/(\(Created\))?\n/) {
+        if $1
+          "(Already exists)\n"
+        else
+          " (Unchanged)\n"
+        end
+      }
+    end
+
     spec "(cdnjs) doesn't override existing files when they are identical to downloaded files." do
       tmpdir = @tmpdir
       expected = <<END
@@ -824,14 +869,6 @@ END
 #{tmpdir}/jquery-jcrop/2.0.4/js/Jcrop.min.js ... Done (38,379 byte)
 END
       _do_download_test3("cdnjs", "jquery-jcrop", "2.0.4", expected)
-    end
-
-    spec "(google) doesn't override existing files when they are identical to downloaded files." do
-      tmpdir = @tmpdir
-      expected = <<END
-#{tmpdir}/jquery/3.6.0/jquery.min.js ... Done (89,501 byte)
-END
-      _do_download_test3("google", "jquery", "3.6.0", expected)
     end
 
     spec "(jsdelivr) doesn't override existing files when they are identical to downloaded files." do
@@ -864,10 +901,18 @@ END
       _do_download_test3("unpkg", "chibijs", "3.0.9", expected)
     end
 
+    spec "(google) doesn't override existing files when they are identical to downloaded files." do
+      tmpdir = @tmpdir
+      expected = <<END
+#{tmpdir}/jquery/3.6.0/jquery.min.js ... Done (89,501 byte)
+END
+      _do_download_test3("google", "jquery", "3.6.0", expected)
+    end
+
   end
 
 
-  topic "cdnget CDN swfobject latest" do
+  topic "cdnget <CDN> <library> latest" do
 
     spec "(cdnjs) shows latest version." do
       actual = CDNGet::Main.new("cdnget").run("cdnjs", "swfobject", "latest")
@@ -882,18 +927,6 @@ license:  MIT
 urls:
   - https://cdnjs.cloudflare.com/ajax/libs/swfobject/2.2/swfobject.js
   - https://cdnjs.cloudflare.com/ajax/libs/swfobject/2.2/swfobject.min.js
-END
-    end
-
-    spec "(google) shows latest version." do
-      actual = CDNGet::Main.new("cdnget").run("google", "swfobject", "latest")
-      ok {actual} == <<END
-name:     swfobject
-version:  2.2
-site:     https://github.com/swfobject/swfobject
-info:     https://developers.google.com/speed/libraries/#swfobject
-urls:
-  - https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js
 END
     end
 
@@ -941,10 +974,22 @@ urls:
 END
     end
 
+    spec "(google) shows latest version." do
+      actual = CDNGet::Main.new("cdnget").run("google", "swfobject", "latest")
+      ok {actual} == <<END
+name:     swfobject
+version:  2.2
+site:     https://github.com/swfobject/swfobject
+info:     https://developers.google.com/speed/libraries/#swfobject
+urls:
+  - https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js
+END
+    end
+
   end
 
 
-  topic "cdnget CDN swfobject latest dir" do
+  topic "cdnget CDN <library> latest <dir>" do
 
     before do
       @tmpdir = "tmpdir1"
@@ -962,15 +1007,6 @@ END
       ok {sout} == <<"END"
 #{@tmpdir}/swfobject/2.2/swfobject.js ... Done (10,220 byte)
 #{@tmpdir}/swfobject/2.2/swfobject.min.js ... Done (9,211 byte)
-END
-    end
-
-    spec "(google) downlaods latest version." do
-      sout, serr = capture_sio do()
-        CDNGet::Main.new("cdnget").run("google", "swfobject", "latest", @tmpdir)
-      end
-      ok {sout} == <<"END"
-#{@tmpdir}/swfobject/2.2/swfobject.js ... Done (10,220 byte)
 END
     end
 
@@ -1004,10 +1040,19 @@ END
 END
     end
 
+    spec "(google) downlaods latest version." do
+      sout, serr = capture_sio do()
+        CDNGet::Main.new("cdnget").run("google", "swfobject", "latest", @tmpdir)
+      end
+      ok {sout} == <<"END"
+#{@tmpdir}/swfobject/2.2/swfobject.js ... Done (10,220 byte)
+END
+    end
+
   end
 
 
-  topic "cdnget CDN bulma 0.9.3 dir" do
+  topic "cdnget CDN bulma 0.9.3 <dir> (containing '.DS_Store')" do
 
     before do
       @tmpdir = "tmpdir1"
@@ -1029,12 +1074,14 @@ END
   end
 
 
-  topic "cdnget CDN jquery 2.2.0 foo bar" do
+  topic "cdnget <CDN> <library> <version> <dir> foo bar" do
 
     spec "results in argument error." do
-      args = ["cdnjs", "jquery", "2.2.0", "foo", "bar"]
-      pr = proc { CDNGet::Main.new("cdnget").run(*args) }
-      ok {pr}.raise?(CDNGet::CommandError, "'bar': Too many arguments.")
+      CDN_NAMES.each do |cdn|
+        args = [cdn, "jquery", "2.2.0", "foo", "bar"]
+        pr = proc { CDNGet::Main.new("cdnget").run(*args) }
+        ok {pr}.raise?(CDNGet::CommandError, "'bar': Too many arguments.")
+      end
     end
 
   end
