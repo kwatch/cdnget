@@ -329,6 +329,7 @@ module CDNGet
       "x-algo""lia-app""lication-id"=>"OFCNC""OG2CU",
       "x-algo""lia-api""-key"=>"f54e21fa3a2""a0160595bb05""8179bfb1e",
     }
+    LIBRARY_REXP = /\A([-.\w]+|\@[-\w]+\/[-.\w]+)\z/
 
     def list()
       return nil    # nil means that this CDN can't list libraries without pattern
@@ -357,7 +358,7 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      url = "https://ofcncog2cu-dsn.algolia.net/1/indexes/npm-search/#{library}"
+      url = "https://ofcncog2cu-dsn.algolia.net/1/indexes/npm-search/#{library.sub('/', '%2f')}"
       uri = URI.parse(url)
       begin
         json = HttpConnection.open(uri, HEADERS) {|http| http.get(uri) }
@@ -397,12 +398,13 @@ module CDNGet
       baseurl = "#{CDN_URL}/#{library}@#{version}"
       _debug_print(jdata)
       #
+      npmpkg_path = "/#{library.gsub('/', '%2f')}/-/#{library.sub(/^@[-\w]+/, '')}-#{version}.tgz"
       dict = find(library)
       dict.delete(:versions)
       dict.update({
         version: version,
         info:    File.join(SITE_URL, "/package/npm/#{library}?version=#{version}"),
-        npmpkg:  "https://registry.npmjs.org/#{library}/-/#{library}-#{version}.tgz",
+        npmpkg:  "https://registry.npmjs.org#{npmpkg_path}",
         urls:    files.collect {|x| baseurl + x },
         files:   files,
         baseurl: baseurl,
@@ -427,6 +429,7 @@ module CDNGet
     SITE_URL = "https://unpkg.com/"
     #API_URL  = "https://www.npmjs.com"
     API_URL  = "https://api.npms.io/v2"
+    LIBRARY_REXP = /\A([-.\w]+|\@[-\w]+\/[-.\w]+)\z/
 
     protected
 
@@ -457,7 +460,7 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      json = fetch("#{API_URL}/package/#{library}", library)
+      json = fetch("#{API_URL}/package/#{library.sub('/', '%2f')}", library)
       jdata = JSON.load(json)
       _debug_print(jdata)
       dict = jdata["collected"]["metadata"]
@@ -498,11 +501,12 @@ module CDNGet
       baseurl = File.join(SITE_URL, "/#{library}@#{version}")
       _debug_print(jdata)
       #
+      npmpkg_path = "/#{library.gsub('/', '%2f')}/-/#{library.sub(/^@[-\w]+/, '')}-#{version}.tgz"
       dict.update({
         name:     library,
         version:  version,
         info:     File.join(SITE_URL, "/browse/#{library}@#{version}/"),
-        npmpkg:  "https://registry.npmjs.org/#{library}/-/#{library}-#{version}.tgz",
+        npmpkg:   "https://registry.npmjs.org#{npmpkg_path}",
         urls:     files.collect {|x| baseurl+x },
         files:    files,
         baseurl:  baseurl,
