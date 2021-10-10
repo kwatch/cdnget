@@ -6,8 +6,8 @@ Gem::Specification.new do |o|
   o.authors       = ["makoto kuwata"]
   o.email         = ["kwa@kuwata-lab.com"]
 
-  o.summary       = "Utility to download files from CDNJS, jsDelivr, UNPKG or Google."
-  o.description   = "Utility to download files from CDNJS, jsDelivr, UNPKG or Google."
+  o.summary       = "download JS/CSS files from public CDN (CDNJS/jsDelivr/UNPKG/Google)"
+  o.description   = "download JS/CSS files from public CDN (CDNJS/jsDelivr/UNPKG/Google)"
   o.homepage      = "https://github.com/kwatch/cdnget/tree/ruby-release"
   o.license       = "MIT"
 
@@ -23,6 +23,5 @@ Gem::Specification.new do |o|
 
   o.required_ruby_version = '>= 2.0'
 
-  o.add_development_dependency "minitest", "~> 5.4"
-  o.add_development_dependency "minitest-ok", "~> 0.3"
+  o.add_development_dependency "oktest", "~> 1.0"
 end
