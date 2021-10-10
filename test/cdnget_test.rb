@@ -10,13 +10,17 @@ Oktest.scope do
 
   CDN_NAMES = ['cdnjs', 'jsdelivr', 'unpkg', 'google']
 
+  def run(*args)
+    return CDNGet::Main.new("cdnget").run(*args)
+  end
+
 
   topic 'cdnget [-h][--help]' do
 
     spec "prints help message." do
       expected = CDNGet::Main.new("cdnget").help_message()
-      ok {CDNGet::Main.new("cdnget").run("-h")}     == expected
-      ok {CDNGet::Main.new("cdnget").run("--help")} == expected
+      ok {run("-h")}     == expected
+      ok {run("--help")} == expected
     end
 
   end
@@ -26,8 +30,8 @@ Oktest.scope do
 
     spec "prints help message." do
       expected = CDNGet::RELEASE + "\n"
-      ok {CDNGet::Main.new("cdnget").run("-v")}        == expected
-      ok {CDNGet::Main.new("cdnget").run("--version")} == expected
+      ok {run("-v")}        == expected
+      ok {run("--version")} == expected
     end
 
   end
@@ -44,7 +48,7 @@ google      # https://developers.google.com/speed/libraries/
 #jquery      # https://code.jquery.com/
 #aspnet      # https://www.asp.net/ajax/cdn/
 END
-      actual = CDNGet::Main.new().run()
+      actual = run()
       ok {actual} == expected.gsub(/^\#.*\n/, '')
     end
 
@@ -54,26 +58,26 @@ END
   topic 'cdnget <CDN>' do
 
     spec "(cdnjs) lists librareis." do
-      actual = CDNGet::Main.new().run("cdnjs")
+      actual = run("cdnjs")
       ok {actual} =~ /^jquery                # JavaScript library for DOM operations$/
       ok {actual} =~ /^angular\.js            # AngularJS is an MVC framework for building web applications\./
       ok {actual} =~ /^ember\.js              # Ember is a JavaScript framework for creating ambitious web applications that eliminates boilerplate and provides a standard application architecture\./
     end
 
     spec "(jsdelivr) lists librareis." do
-      pr = proc { CDNGet::Main.new().run("jsdelivr") }
+      pr = proc { run("jsdelivr") }
       ok {pr}.raise?(CDNGet::CommandError,
                      "jsdelivr: cannot list libraries; please specify pattern such as 'jquery*'.")
     end
 
     spec "(unpkg) lists librareis." do
-      pr = proc { CDNGet::Main.new().run("unpkg") }
+      pr = proc { run("unpkg") }
       ok {pr}.raise?(CDNGet::CommandError,
                      "unpkg: cannot list libraries; please specify pattern such as 'jquery*'.")
     end
 
     spec "(google) lists librareis." do
-      actual = CDNGet::Main.new().run("google")
+      actual = run("google")
       ok {actual} =~ /^jquery /
       #ok {actual} =~ /^angularjs /
       ok {actual} =~ /^swfobject /
@@ -86,7 +90,7 @@ END
   topic 'cdnget <CDN> <pattern> (#1)' do
 
     spec "(cdnjs) lists libraries starting to pattern." do
-      actual = CDNGet::Main.new().run("cdnjs", "jquery*")
+      actual = run("cdnjs", "jquery*")
       ok {actual} =~ /^jquery                #/
       ok {actual} =~ /^jqueryui              #/   # match
       ok {actual} !~ /^require-jquery        #/   # not match
@@ -96,7 +100,7 @@ END
     end
 
     spec "(jsdelivr) lists libraries starting to pattern." do
-      actual = CDNGet::Main.new().run("jsdelivr", "jquery*")
+      actual = run("jsdelivr", "jquery*")
       ok {actual} =~ /^jquery                #/
       ok {actual} =~ /^jquery-datepicker     #/   # match
       ok {actual} !~ /^angularjs/
@@ -104,7 +108,7 @@ END
     end
 
     spec "(unpkg) lists libraries starting to pattern." do
-      actual = CDNGet::Main.new().run("unpkg", "jquery*")
+      actual = run("unpkg", "jquery*")
       ok {actual} =~ /^jquery                #/
       ok {actual} =~ /^jquery-ui             #/   # match
       ok {actual} !~ /^jquery\.ui /
@@ -112,7 +116,7 @@ END
     end
 
     spec "(google) lists libraries starting to pattern." do
-      actual = CDNGet::Main.new().run("google", "jquery*")
+      actual = run("google", "jquery*")
       ok {actual} =~ /^jquery                #/
       ok {actual} =~ /^jqueryui              #/   # match
       ok {actual} !~ /^angularjs/
@@ -124,7 +128,7 @@ END
   topic 'cdnget <CDN> <pattern> (#2)' do
 
     spec "(cdnjs) lists libraries ending to pattern." do
-      actual = CDNGet::Main.new().run("cdnjs", "*jquery")
+      actual = run("cdnjs", "*jquery")
       ok {actual} =~ /^jquery                #/
       ok {actual} !~ /^jqueryui              #/   # not match
       ok {actual} =~ /^require-jquery        #/   # match
@@ -134,7 +138,7 @@ END
     end
 
     spec "(jsdelivr) lists libraries ending to pattern." do
-      actual = CDNGet::Main.new().run("jsdelivr", "*jquery")
+      actual = run("jsdelivr", "*jquery")
       ok {actual} =~ /^jquery                #/
       ok {actual} !~ /^jquery-datepicker /        # not match
       ok {actual} !~ /^angularjs/
@@ -142,7 +146,7 @@ END
     end
 
     spec "(unpkg) lists libraries ending to pattern." do
-      actual = CDNGet::Main.new().run("unpkg", "*jquery")
+      actual = run("unpkg", "*jquery")
       ok {actual} =~ /^jquery                #/
       ok {actual} !~ /^jquery-ui             #/   # not match
       ok {actual} !~ /^angularjs/
@@ -150,7 +154,7 @@ END
     end
 
     spec "(google) lists libraries ending to pattern." do
-      actual = CDNGet::Main.new().run("google", "*jquery")
+      actual = run("google", "*jquery")
       ok {actual} =~ /^jquery                #/
       ok {actual} !~ /^jqueryui              #/   # not match
       ok {actual} !~ /^angularjs/
@@ -162,7 +166,7 @@ END
   topic 'cdnget <CDN> <pattern> (#3)' do
 
     spec "(cdnjs) lists libraries including pattern." do
-      actual = CDNGet::Main.new().run("cdnjs", "*jquery*")
+      actual = run("cdnjs", "*jquery*")
       ok {actual} =~ /^jquery                #/
       ok {actual} =~ /^jqueryui              #/   # match
       ok {actual} =~ /^require-jquery        #/   # match
@@ -172,7 +176,7 @@ END
     end
 
     spec "(jsdelivr) lists libraries including pattern." do
-      actual = CDNGet::Main.new().run("jsdelivr", "*jquery*")
+      actual = run("jsdelivr", "*jquery*")
       ok {actual} =~ /^jquery /
       ok {actual} =~ /^jasmine-jquery /
       ok {actual} =~ /^jquery-form /
@@ -181,7 +185,7 @@ END
     end
 
     spec "(unpkg) lists libraries including pattern." do
-      actual = CDNGet::Main.new().run("unpkg", "*jquery*")
+      actual = run("unpkg", "*jquery*")
       ok {actual} =~ /^jquery /
       ok {actual} =~ /^jquery-csv /
       ok {actual} =~ /^jquery\.terminal /
@@ -191,7 +195,7 @@ END
     end
 
     spec "(google) lists libraries including pattern." do
-      actual = CDNGet::Main.new().run("google", "*o*")
+      actual = run("google", "*o*")
       ok {actual} !~ /^jquery /
       ok {actual} !~ /^angularjs /
       ok {actual} =~ /^mootools /
@@ -204,7 +208,7 @@ END
   topic "cdnget <CDN> <library> (exists)" do
 
     spec "(cdnjs) lists versions of library." do
-      actual = CDNGet::Main.new().run("cdnjs", "jquery")
+      actual = run("cdnjs", "jquery")
       text1 = <<END
 name:     jquery
 desc:     JavaScript library for DOM operations
@@ -228,7 +232,7 @@ END
     end
 
     spec "(jsdelivr) lists versions of library." do
-      actual = CDNGet::Main.new().run("jsdelivr", "jquery")
+      actual = run("jsdelivr", "jquery")
       text1 = <<END
 name:     jquery
 desc:     JavaScript library for DOM operations
@@ -253,7 +257,7 @@ END
     end
 
     spec "(unpkg) lists versions of library." do
-      actual = CDNGet::Main.new().run("unpkg", "jquery")
+      actual = run("unpkg", "jquery")
       text1 = <<END
 name:     jquery
 desc:     JavaScript library for DOM operations
@@ -277,7 +281,7 @@ END
     end
 
     spec "(google) lists versions of library." do
-      actual = CDNGet::Main.new().run("google", "jquery")
+      actual = run("google", "jquery")
       text1 = <<END
 name:     jquery
 site:     http://jquery.com/
@@ -303,25 +307,25 @@ END
   topic "cdnget <CDN> <library> (not exist)" do
 
     spec "(cdnjs) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("cdnjs", "jquery-ui") }
+      pr = proc { run("cdnjs", "jquery-ui") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
       #
-      pr = proc { CDNGet::Main.new().run("cdnjs", "emberjs", "2.2.1") }
+      pr = proc { run("cdnjs", "emberjs", "2.2.1") }
       ok {pr}.raise?(CDNGet::CommandError, "emberjs: Library not found (maybe 'ember.js'?).")
     end
 
     spec "(jsdelivr) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("jsdelivr", "jquery-foobar") }
+      pr = proc { run("jsdelivr", "jquery-foobar") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-foobar: Library not found.")
     end
 
     spec "(unpkg) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("unpkg", "jquery-foobar") }
+      pr = proc { run("unpkg", "jquery-foobar") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-foobar: Library not found.")
     end
 
     spec "(google) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("google", "jquery-ui") }
+      pr = proc { run("google", "jquery-ui") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
     end
 
@@ -344,7 +348,7 @@ urls:
   - https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js
   - https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.map
 END
-      actual = CDNGet::Main.new().run("cdnjs", "jquery", "2.2.0")
+      actual = run("cdnjs", "jquery", "2.2.0")
       ok {actual} == expected
     end
 
@@ -367,7 +371,7 @@ urls:
   - https://cdn.jsdelivr.net/npm/jquery@2.2.0/dist/jquery.min.map
   - https://cdn.jsdelivr.net/npm/jquery@2.2.0/LICENSE.txt
 END
-      actual = CDNGet::Main.new().run("jsdelivr", "jquery", "2.2.0")
+      actual = run("jsdelivr", "jquery", "2.2.0")
       ok {actual}.start_with?(expected)
     end
 
@@ -506,7 +510,7 @@ urls:
   - https://unpkg.com/jquery@3.6.0/AUTHORS.txt
   - https://unpkg.com/jquery@3.6.0/LICENSE.txt
 END
-      actual = CDNGet::Main.new().run("unpkg", "jquery", "3.6.0")
+      actual = run("unpkg", "jquery", "3.6.0")
       ok {actual} == expected
     end
 
@@ -519,7 +523,7 @@ info:     https://developers.google.com/speed/libraries/#jquery
 urls:
   - https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js
 END
-      actual = CDNGet::Main.new().run("google", "jquery", "2.2.0")
+      actual = run("google", "jquery", "2.2.0")
       ok {actual} == expected
     end
 
@@ -547,7 +551,7 @@ urls:
   - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/js/jquery.color.min.js
   - https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/js/jquery.min.js
 END
-      actual = CDNGet::Main.new().run("cdnjs", "jquery-jcrop", "0.9.12")
+      actual = run("cdnjs", "jquery-jcrop", "0.9.12")
       ok {actual} == expected
     end
 
@@ -561,25 +565,25 @@ END
   topic "cdnget <CDN> <not-existing-library> <version>" do
 
     spec "(cdnjs) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("cdnjs", "jquery-ui", "1.9.2") }
+      pr = proc { run("cdnjs", "jquery-ui", "1.9.2") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
       #
-      pr = proc { CDNGet::Main.new().run("cdnjs", "emberjs", "2.2.1") }
+      pr = proc { run("cdnjs", "emberjs", "2.2.1") }
       ok {pr}.raise?(CDNGet::CommandError, "emberjs: Library not found (maybe 'ember.js'?).")
     end
 
     spec "(jsdelivr) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("jsdelivr", "jquery-ui", "1.9.2") }
+      pr = proc { run("jsdelivr", "jquery-ui", "1.9.2") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-ui@1.9.2: Library or version not found.")
     end
 
     spec "(unpkg) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("unpkg", "jquery-foobar", "1.9.2") }
+      pr = proc { run("unpkg", "jquery-foobar", "1.9.2") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-foobar: Library not found.")
     end
 
     spec "(google) raises error when library name is wrong." do
-      pr = proc { CDNGet::Main.new().run("google", "jquery-ui", "1.9.2") }
+      pr = proc { run("google", "jquery-ui", "1.9.2") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery-ui: Library not found.")
     end
 
@@ -589,30 +593,30 @@ END
   topic "cdnget <CDN> <library> <not-existing-version>" do
 
     spec "(cdnjs) raises error when version is wrong." do
-      pr = proc { CDNGet::Main.new().run("cdnjs", "jquery", "1.0.0") }
+      pr = proc { run("cdnjs", "jquery", "1.0.0") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery/1.0.0: Library or version not found.")
-      pr = proc { CDNGet::Main.new().run("cdnjs", "jquery", "blabla") }
+      pr = proc { run("cdnjs", "jquery", "blabla") }
       ok {pr}.raise?(CDNGet::CommandError, "blabla: Invalid version number.")
     end
 
     spec "(jsdelivr) raises error when version is wrong." do
-      pr = proc { CDNGet::Main.new().run("jsdelivr", "jquery", "1.0.0") }
+      pr = proc { run("jsdelivr", "jquery", "1.0.0") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery@1.0.0: Library or version not found.")
-      pr = proc { CDNGet::Main.new().run("jsdelivr", "jquery", "blabla") }
+      pr = proc { run("jsdelivr", "jquery", "blabla") }
       ok {pr}.raise?(CDNGet::CommandError, "blabla: Invalid version number.")
     end
 
     spec "(unpkg) raises error when version is wrong." do
-      pr = proc { CDNGet::Main.new().run("unpkg", "jquery", "1.0.0") }
+      pr = proc { run("unpkg", "jquery", "1.0.0") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery@1.0.0: Version not found.")
-      pr = proc { CDNGet::Main.new().run("unpkg", "jquery", "blabla") }
+      pr = proc { run("unpkg", "jquery", "blabla") }
       ok {pr}.raise?(CDNGet::CommandError, "blabla: Invalid version number.")
     end
 
     spec "(google) raises error when version is wrong." do
-      pr = proc { CDNGet::Main.new().run("google", "jquery", "1.0.0") }
+      pr = proc { run("google", "jquery", "1.0.0") }
       ok {pr}.raise?(CDNGet::CommandError, "jquery 1.0.0: Version not found.")
-      pr = proc { CDNGet::Main.new().run("google", "jquery", "blabla") }
+      pr = proc { run("google", "jquery", "blabla") }
       ok {pr}.raise?(CDNGet::CommandError, "blabla: Invalid version number.")
     end
 
@@ -632,7 +636,7 @@ END
 
     def _do_download_test1(cdn_code, library="jquery", version="2.2.0")
       sout, serr = capture_sio() do
-        actual = CDNGet::Main.new().run(cdn_code, library, version, @tmpdir)
+        actual = run(cdn_code, library, version, @tmpdir)
       end
       yield sout, serr
     end
@@ -725,7 +729,7 @@ END
 
     def _do_download_test2(cdn_code, library="jquery-jcrop", version="0.9.12")
       sout, serr = capture_sio() do
-        actual = CDNGet::Main.new().run(cdn_code, library, version, @tmpdir)
+        actual = run(cdn_code, library, version, @tmpdir)
       end
       yield sout, serr
     end
@@ -874,13 +878,13 @@ END
       path = "#{tmpdir}/#{libname}/#{version}"
       # 1st
       sout, serr = capture_sio() do
-        actual = CDNGet::Main.new().run(cdn_code, libname, version, tmpdir)
+        actual = run(cdn_code, libname, version, tmpdir)
       end
       ok {serr} == ""
       ok {sout} == expected
       # 2nd
       sout, serr = capture_sio() do
-        actual = CDNGet::Main.new().run(cdn_code, libname, version, tmpdir)
+        actual = run(cdn_code, libname, version, tmpdir)
       end
       ok {serr} == ""
       ok {sout} == expected.gsub(/(\(Created\))?\n/) {
@@ -948,7 +952,7 @@ END
   topic "cdnget <CDN> <library> latest" do
 
     spec "(cdnjs) shows latest version." do
-      actual = CDNGet::Main.new("cdnget").run("cdnjs", "swfobject", "latest")
+      actual = run("cdnjs", "swfobject", "latest")
       ok {actual} == <<END
 name:     swfobject
 version:  2.2
@@ -964,7 +968,7 @@ END
     end
 
     spec "(jsdelivr) shows latest version." do
-      actual = CDNGet::Main.new("cdnget").run("jsdelivr", "swfobject", "latest")
+      actual = run("jsdelivr", "swfobject", "latest")
       ok {actual} == <<END
 name:     swfobject
 version:  2.2.1
@@ -986,7 +990,7 @@ END
     end
 
     spec "(unpkg) shows latest version." do
-      actual = CDNGet::Main.new("cdnget").run("unpkg", "swfobject", "latest")
+      actual = run("unpkg", "swfobject", "latest")
       ok {actual} == <<END
 name:     swfobject
 version:  2.2.1
@@ -1008,7 +1012,7 @@ END
     end
 
     spec "(google) shows latest version." do
-      actual = CDNGet::Main.new("cdnget").run("google", "swfobject", "latest")
+      actual = run("google", "swfobject", "latest")
       ok {actual} == <<END
 name:     swfobject
 version:  2.2
@@ -1035,7 +1039,7 @@ END
 
     spec "(cdnjs) downlaods latest version." do
       sout, serr = capture_sio do()
-        CDNGet::Main.new("cdnget").run("cdnjs", "swfobject", "latest", @tmpdir)
+        run("cdnjs", "swfobject", "latest", @tmpdir)
       end
       ok {sout} == <<"END"
 #{@tmpdir}/swfobject/2.2/swfobject.js ... Done (10,220 byte)
@@ -1045,7 +1049,7 @@ END
 
     spec "(jsdelivr) downlaods latest version." do
       sout, serr = capture_sio do()
-        CDNGet::Main.new("cdnget").run("jsdelivr", "swfobject", "latest", @tmpdir)
+        run("jsdelivr", "swfobject", "latest", @tmpdir)
       end
       ok {sout} == <<"END"
 #{@tmpdir}/swfobject@2.2.1/.npmignore ... Done (13 byte)
@@ -1060,7 +1064,7 @@ END
 
     spec "(unpkg) downlaods latest version." do
       sout, serr = capture_sio do()
-        CDNGet::Main.new("cdnget").run("unpkg", "swfobject", "latest", @tmpdir)
+        run("unpkg", "swfobject", "latest", @tmpdir)
       end
       ok {sout} == <<"END"
 #{@tmpdir}/swfobject@2.2.1/package.json ... Done (524 byte)
@@ -1075,7 +1079,7 @@ END
 
     spec "(google) downlaods latest version." do
       sout, serr = capture_sio do()
-        CDNGet::Main.new("cdnget").run("google", "swfobject", "latest", @tmpdir)
+        run("google", "swfobject", "latest", @tmpdir)
       end
       ok {sout} == <<"END"
 #{@tmpdir}/swfobject/2.2/swfobject.js ... Done (10,220 byte)
@@ -1088,12 +1092,12 @@ END
   topic "cdnget <CDN> @babel/core" do
 
     spec "(cdnjs) raises error." do
-      pr = proc { CDNGet::Main.new("cdnget").run("cdnjs", "@babel/core") }
+      pr = proc { run("cdnjs", "@babel/core") }
       ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
     end
 
     spec "(jsdelivr) show details of package." do
-      output = CDNGet::Main.new("cdnget").run("jsdelivr", "@babel/core")
+      output = run("jsdelivr", "@babel/core")
       ok {output}.start_with? <<'END'
 name:     @babel/core
 desc:     Babel compiler core.
@@ -1114,7 +1118,7 @@ END
     end
 
     spec "(unpkg) show details of package." do
-      output = CDNGet::Main.new("cdnget").run("unpkg", "@babel/core")
+      output = run("unpkg", "@babel/core")
       ok {output}.start_with? <<'END'
 name:     @babel/core
 desc:     Babel compiler core.
@@ -1135,7 +1139,7 @@ END
     end
 
     spec "(google) raises error." do
-      pr = proc { CDNGet::Main.new("cdnget").run("google", "@babel/core") }
+      pr = proc { run("google", "@babel/core") }
       ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
     end
 
@@ -1145,12 +1149,12 @@ END
   topic "cdnget <CDN> @babel/core <version>"do
 
     spec "(cdnjs) raises error." do
-      pr = proc { CDNGet::Main.new("cdnget").run("cdnjs", "@babel/core", "7.15.5") }
+      pr = proc { run("cdnjs", "@babel/core", "7.15.5") }
       ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
     end
 
     spec "(jsdelivr) lists files." do
-      output = CDNGet::Main.new("cdnget").run("jsdelivr", "@babel/core", "7.15.5")
+      output = run("jsdelivr", "@babel/core", "7.15.5")
       ok {output}.start_with? <<'END'
 name:     @babel/core
 version:  7.15.5
@@ -1170,7 +1174,7 @@ END
     end
 
     spec "(unpkg) lists files" do
-      output = CDNGet::Main.new("cdnget").run("unpkg", "@babel/core", "7.15.5")
+      output = run("unpkg", "@babel/core", "7.15.5")
       ok {output}.start_with? <<'END'
 name:     @babel/core
 version:  7.15.5
@@ -1190,7 +1194,7 @@ END
     end
 
     spec "(google) raises error." do
-      pr = proc { CDNGet::Main.new("cdnget").run("google", "@babel/core", "7.15.5") }
+      pr = proc { run("google", "@babel/core", "7.15.5") }
       ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
     end
 
@@ -1209,13 +1213,13 @@ END
     end
 
     spec "(cdnjs) raises error." do
-      pr = proc { CDNGet::Main.new("cdnget").run("cdnjs", "@babel/core", "7.15.5", @tmpdir) }
+      pr = proc { run("cdnjs", "@babel/core", "7.15.5", @tmpdir) }
       ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
     end
 
     spec "(jsdelivr) download files." do
       sout, serr = capture_sio do
-        CDNGet::Main.new("cdnget").run("jsdelivr", "@babel/core", "7.15.5", @tmpdir)
+        run("jsdelivr", "@babel/core", "7.15.5", @tmpdir)
       end
       ok {sout} == <<"END"
 #{@tmpdir}/@babel/core@7.15.5/lib/config/cache-contexts.js ... Done (0 byte)
@@ -1284,7 +1288,7 @@ END
 
     spec "(unpkg) download files" do
       sout, serr = capture_sio do
-        CDNGet::Main.new("cdnget").run("unpkg", "@babel/core", "7.15.5", @tmpdir)
+        run("unpkg", "@babel/core", "7.15.5", @tmpdir)
       end
       ok {sout} == <<"END"
 #{@tmpdir}/@babel/core@7.15.5/LICENSE ... Done (1,106 byte)
@@ -1352,7 +1356,7 @@ END
     end
 
     spec "(google) raises error." do
-      pr = proc { CDNGet::Main.new("cdnget").run("google", "@babel/core", "7.15.5", @tmpdir) }
+      pr = proc { run("google", "@babel/core", "7.15.5", @tmpdir) }
       ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
     end
 
@@ -1372,7 +1376,7 @@ END
 
     spec "(unpkg) skips '.DS_Store' files." do
       sout, serr = capture_sio do()
-        CDNGet::Main.new("cdnget").run("unpkg", "bulma", "0.9.3", @tmpdir)
+        run("unpkg", "bulma", "0.9.3", @tmpdir)
       end
       ok {sout}.include?("#{@tmpdir}/bulma@0.9.3/sass/.DS_Store ... Skipped\n")
       ok {sout}.include?("#{@tmpdir}/bulma@0.9.3/sass/base/.DS_Store ... Skipped\n")
@@ -1386,7 +1390,7 @@ END
     spec "results in argument error." do
       CDN_NAMES.each do |cdn|
         args = [cdn, "jquery", "2.2.0", "foo", "bar"]
-        pr = proc { CDNGet::Main.new("cdnget").run(*args) }
+        pr = proc { run(*args) }
         ok {pr}.raise?(CDNGet::CommandError, "'bar': Too many arguments.")
       end
     end
