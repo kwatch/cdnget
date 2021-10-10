@@ -14,6 +14,15 @@ Oktest.scope do
     return CDNGet::Main.new("cdnget").run(*args)
   end
 
+  before do
+    @tmpdir = "tmpdir1"
+    Dir.mkdir @tmpdir
+  end
+
+  after do
+    FileUtils.rm_rf @tmpdir
+  end
+
 
   topic 'cdnget [-h][--help]' do
 
@@ -625,15 +634,6 @@ END
 
   topic "cdnget <CDN> <library> <version> <dir> (only files)" do
 
-    before do
-      @tmpdir = "tmpdir1"
-      Dir.mkdir(@tmpdir)
-    end
-
-    after do
-      FileUtils.rm_rf(@tmpdir)
-    end
-
     def _do_download_test1(cdn_code, library="jquery", version="2.2.0")
       sout, serr = capture_sio() do
         actual = run(cdn_code, library, version, @tmpdir)
@@ -717,15 +717,6 @@ END
 
 
   topic "cdnget <CDN> <library> <version> <dir> (containing subdirectory)" do
-
-    before do
-      @tmpdir = "tmpdir1"
-      Dir.mkdir(@tmpdir)
-    end
-
-    after do
-      FileUtils.rm_rf(@tmpdir)
-    end
 
     def _do_download_test2(cdn_code, library="jquery-jcrop", version="0.9.12")
       sout, serr = capture_sio() do
@@ -863,15 +854,6 @@ END
 
 
   topic "cdnget <CDN> <library> <version> <dir> (not override existing files)" do
-
-    before do
-      @tmpdir = "tmpdir1"
-      Dir.mkdir(@tmpdir)
-    end
-
-    after do
-      FileUtils.rm_rf(@tmpdir)
-    end
 
     def _do_download_test3(cdn_code, libname, version, expected)
       tmpdir = @tmpdir
@@ -1027,15 +1009,6 @@ END
 
 
   topic "cdnget CDN <library> latest <dir>" do
-
-    before do
-      @tmpdir = "tmpdir1"
-      Dir.mkdir @tmpdir
-    end
-
-    after do
-      FileUtils.rm_rf @tmpdir
-    end
 
     spec "(cdnjs) downlaods latest version." do
       sout, serr = capture_sio do()
@@ -1203,15 +1176,6 @@ END
 
   topic "cdnget <CDN> @babel/core <version> <dir>" do
 
-    before do
-      @tmpdir = "tmpdir1"
-      Dir.mkdir @tmpdir
-    end
-
-    after do
-      FileUtils.rm_rf @tmpdir
-    end
-
     spec "(cdnjs) raises error." do
       pr = proc { run("cdnjs", "@babel/core", "7.15.5", @tmpdir) }
       ok {pr}.raise?(CDNGet::CommandError, "@babel/core: Invalid library name.")
@@ -1364,15 +1328,6 @@ END
 
 
   topic "cdnget <CDN> bulma 0.9.3 <dir> (containing '.DS_Store')" do
-
-    before do
-      @tmpdir = "tmpdir1"
-      Dir.mkdir @tmpdir
-    end
-
-    after do
-      FileUtils.rm_rf @tmpdir
-    end
 
     spec "(unpkg) skips '.DS_Store' files." do
       sout, serr = capture_sio do()
