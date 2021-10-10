@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
+# frozen_string_literal: true
 
 ##
 ## Download JS/CSS files from public CDN.
@@ -233,7 +234,7 @@ module CDNGet
 
     def _debug_print(x)
       if @debug_mode
-        $stderr.puts "\e[0;35m*** #{PP.pp(x,'')}\e[0m"
+        $stderr.puts "\e[0;35m*** #{PP.pp(x,String.new)}\e[0m"
       end
     end
 
@@ -773,7 +774,7 @@ END
     def do_find_library(cdn_code, library)
       cdn = find_cdn(cdn_code)
       d = cdn.find(library)
-      s = ""
+      s = []
       if @quiet
         d[:versions].each do |ver|
           s << "#{ver}\n"
@@ -791,14 +792,14 @@ END
           s << "  - #{ver}\n"
         end if d[:versions]
       end
-      return s
+      return s.join()
     end
 
     def do_get_library(cdn_code, library, version)
       cdn = find_cdn(cdn_code)
       version = cdn.latest_version(library) if version == 'latest'
       d = cdn.get(library, version)
-      s = ""
+      s = []
       if @quiet
         d[:urls].each do |url|
           s << "#{url}\n"
@@ -819,7 +820,7 @@ END
           s << "  - #{url}\n"
         end if d[:urls]
       end
-      return s
+      return s.join()
     end
 
     def do_download_library(cdn_code, library, version, basedir)
