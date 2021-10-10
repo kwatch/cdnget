@@ -237,7 +237,9 @@ module CDNGet
 
   class CDNJS < Base
     CODE = "cdnjs"
-    SITE_URL = 'https://cdnjs.com/'
+    SITE_URL = "https://cdnjs.com/"
+    API_URL  = "https://api.cdnjs.com/libraries"
+    CDN_URL  = "https://cdnjs.cloudflare.com/ajax/libs"
 
     def fetch(url, library=nil)
       json_str = super
@@ -256,7 +258,7 @@ module CDNGet
     protected :fetch
 
     def list()
-      jstr = fetch("https://api.cdnjs.com/libraries?fields=name,description")
+      jstr = fetch("#{API_URL}?fields=name,description")
       jdata = JSON.parse(jstr)
       _debug_print(jdata)
       libs = jdata['results'].collect {|d| {name: d['name'], desc: d['description']} }
@@ -265,7 +267,7 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
+      jstr = fetch("#{API_URL}/#{library}", library)
       jdata = JSON.parse(jstr)
       _debug_print(jdata)
       versions = jdata['assets'].collect {|d| d['version'] }\
@@ -283,12 +285,12 @@ module CDNGet
 
     def get(library, version)
       validate(library, version)
-      jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
+      jstr = fetch("#{API_URL}/#{library}", library)
       jdata = JSON.parse(jstr)
       _debug_print(jdata)
       d = jdata['assets'].find {|d| d['version'] == version }  or
         raise CommandError.new("#{library}/#{version}: Library or version not found.")
-      baseurl = "https://cdnjs.cloudflare.com/ajax/libs/#{library}/#{version}/"
+      baseurl = "#{CDN_URL}/#{library}/#{version}/"
       return {
         name:     library,
         version:  version,
