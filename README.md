@@ -62,6 +62,7 @@ Todo
 
 * [x] change to call api.cdnjs.com
 * [x] support <https://unpkg.com/>
+* [x] support `@author/name` style NPM package name
 
 
 Copyright and License
