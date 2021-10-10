@@ -609,8 +609,8 @@ module CDNGet
     def get(library, version)
       validate(library, version)
       d = find(library)
-      d[:versions].find(version)  or
-        raise CommandError.new("#{version}: No such version of #{library}.")
+      d[:versions].find {|s| s == version }  or
+        raise CommandError.new("#{library} #{version}: Version not found.")
       urls = d[:urls]
       if urls
         rexp = /(\/libs\/#{library})\/[^\/]+/

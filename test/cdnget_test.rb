@@ -586,6 +586,31 @@ END
   end
 
 
+  topic "cdnget <CDN> <library> <not-existing-version>" do
+
+    spec "(cdnjs) raises error when version is wrong." do
+      pr = proc { CDNGet::Main.new().run("cdnjs", "jquery", "1.0.0") }
+      ok {pr}.raise?(CDNGet::CommandError, "jquery/1.0.0: Library or version not found.")
+    end
+
+    spec "(jsdelivr) raises error when version is wrong." do
+      pr = proc { CDNGet::Main.new().run("jsdelivr", "jquery", "1.0.0") }
+      ok {pr}.raise?(CDNGet::CommandError, "jquery@1.0.0: Library or version not found.")
+    end
+
+    spec "(unpkg) raises error when version is wrong." do
+      pr = proc { CDNGet::Main.new().run("unpkg", "jquery", "1.0.0") }
+      ok {pr}.raise?(CDNGet::CommandError, "jquery@1.0.0: Library or version not found.")
+    end
+
+    spec "(google) raises error when version is wrong." do
+      pr = proc { CDNGet::Main.new().run("google", "jquery", "1.0.0") }
+      ok {pr}.raise?(CDNGet::CommandError, "jquery 1.0.0: Version not found.")
+    end
+
+  end
+
+
   topic "cdnget <CDN> <library> <version> <dir> (only files)" do
 
     before do
