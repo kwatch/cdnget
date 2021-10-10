@@ -406,6 +406,13 @@ module CDNGet
       return dict
     end
 
+    def latest_version(library)
+      validate(library, nil)
+      json = fetch("#{API_URL}/package/npm/#{library}")
+      jdict = JSON.load(json)
+      return jdict["tags"]["latest"]
+    end
+
   end
 
 
