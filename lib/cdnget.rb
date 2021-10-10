@@ -13,10 +13,12 @@
 ## Example:
 ##  $ cdnget                                # list public CDN
 ##  $ cdnget [-q] cdnjs                     # list libraries (except jsdelivr/unpkg)
+##  $ cdnget [-q] cdnjs '*jquery*'          # search libraries
 ##  $ cdnget [-q] cdnjs jquery              # list versions
 ##  $ cdnget [-q] cdnjs jquery latest       # detect latest version
 ##  $ cdnget [-q] cdnjs jquery 3.6.0        # list files
-##  $ cdnget [-q] cdnjs jquery 3.6.0 /tmp   # download files
+##  $ mkdir -p static/lib                   # create a directory
+##  $ cdnget [-q] cdnjs jquery 3.6.0 static/lib  # download files
 ##
 
 require 'open-uri'
