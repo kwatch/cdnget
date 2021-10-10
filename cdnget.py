@@ -2,18 +2,20 @@
 # -*- coding: utf-8 -*-
 
 ##
-## Download files from CDN (CDNJS, Google, jsDelivr).
+## Download files from public CDN (CDNJS, jsDelivr, UNPKG, Google).
 ##
 ## - CDNJS    (https://cdnjs.com/)
-## - Google   (https://developers.google.com/speed/libraries/)
 ## - jsDelivr (https://www.jsdelivr.com/)
+## - UNPKG    (https://unpkg.com/)
+## - Google   (https://developers.google.com/speed/libraries/)
 ##
 ## Example:
-##  $ cdnget                           # list public CDN
-##  $ cdnget cdnjs                     # list libraries
-##  $ cdnget cdnjs jquery              # list versions
-##  $ cdnget cdnjs jquery 2.2.4        # list files
-##  $ cdnget cdnjs jquery 2.2.4 /tmp   # download files
+##  $ cdnget                        # list public CDN
+##  $ cdnget cdnjs                  # list libraries (except jsdelivr/unpkg)
+##  $ cdnget cdnjs 'jquery*'        # search libraries
+##  $ cdnget cdnjs jquery 2.2.4     # list files
+##  $ mkdir -p static/lib           # create a directory
+##  $ cdnget cdnjs jquery 2.2.4 static/lib  # download files
 ##
 
 import sys, os, re
