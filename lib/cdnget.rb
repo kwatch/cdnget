@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 ##
-## Download files from CDN (CDNJS, jsDelivr, UNPKG, Google).
+## Download JS/CSS files from public CDN.
 ##
-## - CDNJS    (https://cdnjs.com/)
-## - jsDelivr (https://www.jsdelivr.com/)
-## - UNPKG    (https://unpkg.com/)
-## - Google   (https://developers.google.com/speed/libraries/)
+## * CDNJS    (https://cdnjs.com/)
+## * jsDelivr (https://www.jsdelivr.com/)
+## * UNPKG    (https://unpkg.com/)
+## * Google   (https://developers.google.com/speed/libraries/)
 ##
 ## Example:
 ##  $ cdnget                                # list public CDN
-##  $ cdnget [-q] cdnjs                     # list libraries
+##  $ cdnget [-q] cdnjs                     # list libraries (except jsdelivr/unpkg)
 ##  $ cdnget [-q] cdnjs jquery              # list versions
 ##  $ cdnget [-q] cdnjs jquery latest       # detect latest version
 ##  $ cdnget [-q] cdnjs jquery 3.6.0        # list files
