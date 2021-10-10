@@ -495,16 +495,24 @@ module CDNGet
       dict = find(library)
       dict.delete(:versions)
       #
-      url = "https://data.jsdelivr.com/v1/package/npm/#{library}@#{version}/flat"
+      url = "#{SITE_URL}#{library}@#{version}/?meta"
       begin
         json = fetch(url, library)
       rescue CommandError
         raise CommandError.new("#{library}@#{version}: Library or version not found.")
       end
       jdata   = JSON.load(json)
-      files   = jdata["files"].collect {|d| d["name"] }
-      baseurl = File.join(SITE_URL, "/#{library}@#{version}")
       _debug_print(jdata)
+      pr = proc do |jdata, files|
+        jdata['files'].each do |d|
+          d['type'] == "directory" ? pr.call(d, files) \
+                                   : (files << d['path'])
+        end if jdata['files']
+        files
+      end
+      files = pr.call(jdata, [])
+      #files = files.sort_by {|s| s.downcase }
+      baseurl = File.join(SITE_URL, "/#{library}@#{version}")
       #
       dict.update({
         name:     library,
@@ -514,7 +522,7 @@ module CDNGet
         urls:     files.collect {|x| baseurl+x },
         files:    files,
         baseurl:  baseurl,
-        default:  jdata["default"],
+        #default:  jdata["default"],
         destdir:  "#{library}@#{version}",
         skipfile: /\.DS_Store\z/,  # downloading '.DS_Store' from UNPKG results in 403
       })

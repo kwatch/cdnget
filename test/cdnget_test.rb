@@ -386,40 +386,20 @@ tags:     jquery, javascript, browser, library
 site:     https://jquery.com
 info:     https://unpkg.com/browse/jquery@3.6.0/
 npmpkg:   https://registry.npmjs.org/jquery/-/jquery-3.6.0.tgz
-default:  /dist/jquery.min.js
 license:  MIT
 urls:
-  - https://unpkg.com/jquery@3.6.0/AUTHORS.txt
-  - https://unpkg.com/jquery@3.6.0/bower.json
-  - https://unpkg.com/jquery@3.6.0/dist/jquery.js
-  - https://unpkg.com/jquery@3.6.0/dist/jquery.min.js
-  - https://unpkg.com/jquery@3.6.0/dist/jquery.min.map
-  - https://unpkg.com/jquery@3.6.0/dist/jquery.slim.js
-  - https://unpkg.com/jquery@3.6.0/dist/jquery.slim.min.js
-  - https://unpkg.com/jquery@3.6.0/dist/jquery.slim.min.map
-  - https://unpkg.com/jquery@3.6.0/external/sizzle/dist/sizzle.js
-  - https://unpkg.com/jquery@3.6.0/external/sizzle/dist/sizzle.min.js
-  - https://unpkg.com/jquery@3.6.0/external/sizzle/dist/sizzle.min.map
-  - https://unpkg.com/jquery@3.6.0/external/sizzle/LICENSE.txt
-  - https://unpkg.com/jquery@3.6.0/LICENSE.txt
-  - https://unpkg.com/jquery@3.6.0/package.json
-  - https://unpkg.com/jquery@3.6.0/README.md
-  - https://unpkg.com/jquery@3.6.0/src/ajax.js
-  - https://unpkg.com/jquery@3.6.0/src/ajax/jsonp.js
-  - https://unpkg.com/jquery@3.6.0/src/ajax/load.js
-  - https://unpkg.com/jquery@3.6.0/src/ajax/script.js
-  - https://unpkg.com/jquery@3.6.0/src/ajax/var/location.js
-  - https://unpkg.com/jquery@3.6.0/src/ajax/var/nonce.js
-  - https://unpkg.com/jquery@3.6.0/src/ajax/var/rquery.js
-  - https://unpkg.com/jquery@3.6.0/src/ajax/xhr.js
-  - https://unpkg.com/jquery@3.6.0/src/attributes.js
-  - https://unpkg.com/jquery@3.6.0/src/attributes/attr.js
-  - https://unpkg.com/jquery@3.6.0/src/attributes/classes.js
-  - https://unpkg.com/jquery@3.6.0/src/attributes/prop.js
-  - https://unpkg.com/jquery@3.6.0/src/attributes/support.js
-  - https://unpkg.com/jquery@3.6.0/src/attributes/val.js
-  - https://unpkg.com/jquery@3.6.0/src/callbacks.js
-  - https://unpkg.com/jquery@3.6.0/src/core.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/_evalUrl.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/buildFragment.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/getAll.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/var/rscriptType.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/var/rtagName.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/setGlobalEval.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/support.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation/wrapMap.js
+  - https://unpkg.com/jquery@3.6.0/src/data/var/acceptData.js
+  - https://unpkg.com/jquery@3.6.0/src/data/var/dataPriv.js
+  - https://unpkg.com/jquery@3.6.0/src/data/var/dataUser.js
+  - https://unpkg.com/jquery@3.6.0/src/data/Data.js
   - https://unpkg.com/jquery@3.6.0/src/core/access.js
   - https://unpkg.com/jquery@3.6.0/src/core/camelCase.js
   - https://unpkg.com/jquery@3.6.0/src/core/DOMEval.js
@@ -428,69 +408,33 @@ urls:
   - https://unpkg.com/jquery@3.6.0/src/core/nodeName.js
   - https://unpkg.com/jquery@3.6.0/src/core/parseHTML.js
   - https://unpkg.com/jquery@3.6.0/src/core/parseXML.js
-  - https://unpkg.com/jquery@3.6.0/src/core/ready.js
   - https://unpkg.com/jquery@3.6.0/src/core/ready-no-deferred.js
+  - https://unpkg.com/jquery@3.6.0/src/core/ready.js
   - https://unpkg.com/jquery@3.6.0/src/core/readyException.js
+  - https://unpkg.com/jquery@3.6.0/src/core/var/rsingleTag.js
   - https://unpkg.com/jquery@3.6.0/src/core/stripAndCollapse.js
   - https://unpkg.com/jquery@3.6.0/src/core/support.js
   - https://unpkg.com/jquery@3.6.0/src/core/toType.js
-  - https://unpkg.com/jquery@3.6.0/src/core/var/rsingleTag.js
-  - https://unpkg.com/jquery@3.6.0/src/css.js
   - https://unpkg.com/jquery@3.6.0/src/css/addGetHookIf.js
   - https://unpkg.com/jquery@3.6.0/src/css/adjustCSS.js
-  - https://unpkg.com/jquery@3.6.0/src/css/curCSS.js
-  - https://unpkg.com/jquery@3.6.0/src/css/finalPropName.js
-  - https://unpkg.com/jquery@3.6.0/src/css/hiddenVisibleSelectors.js
-  - https://unpkg.com/jquery@3.6.0/src/css/showHide.js
-  - https://unpkg.com/jquery@3.6.0/src/css/support.js
   - https://unpkg.com/jquery@3.6.0/src/css/var/cssExpand.js
   - https://unpkg.com/jquery@3.6.0/src/css/var/getStyles.js
   - https://unpkg.com/jquery@3.6.0/src/css/var/isHiddenWithinTree.js
   - https://unpkg.com/jquery@3.6.0/src/css/var/rboxStyle.js
   - https://unpkg.com/jquery@3.6.0/src/css/var/rnumnonpx.js
   - https://unpkg.com/jquery@3.6.0/src/css/var/swap.js
-  - https://unpkg.com/jquery@3.6.0/src/data.js
-  - https://unpkg.com/jquery@3.6.0/src/data/Data.js
-  - https://unpkg.com/jquery@3.6.0/src/data/var/acceptData.js
-  - https://unpkg.com/jquery@3.6.0/src/data/var/dataPriv.js
-  - https://unpkg.com/jquery@3.6.0/src/data/var/dataUser.js
-  - https://unpkg.com/jquery@3.6.0/src/deferred.js
-  - https://unpkg.com/jquery@3.6.0/src/deferred/exceptionHook.js
-  - https://unpkg.com/jquery@3.6.0/src/deprecated.js
+  - https://unpkg.com/jquery@3.6.0/src/css/curCSS.js
+  - https://unpkg.com/jquery@3.6.0/src/css/finalPropName.js
+  - https://unpkg.com/jquery@3.6.0/src/css/hiddenVisibleSelectors.js
+  - https://unpkg.com/jquery@3.6.0/src/css/showHide.js
+  - https://unpkg.com/jquery@3.6.0/src/css/support.js
   - https://unpkg.com/jquery@3.6.0/src/deprecated/ajax-event-alias.js
   - https://unpkg.com/jquery@3.6.0/src/deprecated/event.js
-  - https://unpkg.com/jquery@3.6.0/src/dimensions.js
-  - https://unpkg.com/jquery@3.6.0/src/effects.js
-  - https://unpkg.com/jquery@3.6.0/src/effects/animatedSelector.js
-  - https://unpkg.com/jquery@3.6.0/src/effects/Tween.js
-  - https://unpkg.com/jquery@3.6.0/src/event.js
-  - https://unpkg.com/jquery@3.6.0/src/event/focusin.js
-  - https://unpkg.com/jquery@3.6.0/src/event/support.js
-  - https://unpkg.com/jquery@3.6.0/src/event/trigger.js
+  - https://unpkg.com/jquery@3.6.0/src/ajax.js
   - https://unpkg.com/jquery@3.6.0/src/exports/amd.js
   - https://unpkg.com/jquery@3.6.0/src/exports/global.js
-  - https://unpkg.com/jquery@3.6.0/src/jquery.js
-  - https://unpkg.com/jquery@3.6.0/src/manipulation.js
-  - https://unpkg.com/jquery@3.6.0/src/manipulation/_evalUrl.js
-  - https://unpkg.com/jquery@3.6.0/src/manipulation/buildFragment.js
-  - https://unpkg.com/jquery@3.6.0/src/manipulation/getAll.js
-  - https://unpkg.com/jquery@3.6.0/src/manipulation/setGlobalEval.js
-  - https://unpkg.com/jquery@3.6.0/src/manipulation/support.js
-  - https://unpkg.com/jquery@3.6.0/src/manipulation/var/rscriptType.js
-  - https://unpkg.com/jquery@3.6.0/src/manipulation/var/rtagName.js
-  - https://unpkg.com/jquery@3.6.0/src/manipulation/wrapMap.js
-  - https://unpkg.com/jquery@3.6.0/src/offset.js
-  - https://unpkg.com/jquery@3.6.0/src/queue.js
-  - https://unpkg.com/jquery@3.6.0/src/queue/delay.js
-  - https://unpkg.com/jquery@3.6.0/src/selector.js
-  - https://unpkg.com/jquery@3.6.0/src/selector-native.js
-  - https://unpkg.com/jquery@3.6.0/src/selector-sizzle.js
-  - https://unpkg.com/jquery@3.6.0/src/serialize.js
-  - https://unpkg.com/jquery@3.6.0/src/traversing.js
-  - https://unpkg.com/jquery@3.6.0/src/traversing/findFilter.js
-  - https://unpkg.com/jquery@3.6.0/src/traversing/var/dir.js
-  - https://unpkg.com/jquery@3.6.0/src/traversing/var/rneedsContext.js
-  - https://unpkg.com/jquery@3.6.0/src/traversing/var/siblings.js
+  - https://unpkg.com/jquery@3.6.0/src/effects/animatedSelector.js
+  - https://unpkg.com/jquery@3.6.0/src/effects/Tween.js
   - https://unpkg.com/jquery@3.6.0/src/var/arr.js
   - https://unpkg.com/jquery@3.6.0/src/var/class2type.js
   - https://unpkg.com/jquery@3.6.0/src/var/document.js
@@ -511,7 +455,62 @@ urls:
   - https://unpkg.com/jquery@3.6.0/src/var/slice.js
   - https://unpkg.com/jquery@3.6.0/src/var/support.js
   - https://unpkg.com/jquery@3.6.0/src/var/toString.js
+  - https://unpkg.com/jquery@3.6.0/src/attributes/attr.js
+  - https://unpkg.com/jquery@3.6.0/src/attributes/classes.js
+  - https://unpkg.com/jquery@3.6.0/src/attributes/prop.js
+  - https://unpkg.com/jquery@3.6.0/src/attributes/support.js
+  - https://unpkg.com/jquery@3.6.0/src/attributes/val.js
+  - https://unpkg.com/jquery@3.6.0/src/attributes.js
+  - https://unpkg.com/jquery@3.6.0/src/callbacks.js
+  - https://unpkg.com/jquery@3.6.0/src/core.js
+  - https://unpkg.com/jquery@3.6.0/src/css.js
+  - https://unpkg.com/jquery@3.6.0/src/data.js
+  - https://unpkg.com/jquery@3.6.0/src/deferred.js
+  - https://unpkg.com/jquery@3.6.0/src/queue/delay.js
+  - https://unpkg.com/jquery@3.6.0/src/deprecated.js
+  - https://unpkg.com/jquery@3.6.0/src/dimensions.js
+  - https://unpkg.com/jquery@3.6.0/src/traversing/var/dir.js
+  - https://unpkg.com/jquery@3.6.0/src/traversing/var/rneedsContext.js
+  - https://unpkg.com/jquery@3.6.0/src/traversing/var/siblings.js
+  - https://unpkg.com/jquery@3.6.0/src/traversing/findFilter.js
+  - https://unpkg.com/jquery@3.6.0/src/effects.js
+  - https://unpkg.com/jquery@3.6.0/src/event.js
+  - https://unpkg.com/jquery@3.6.0/src/deferred/exceptionHook.js
+  - https://unpkg.com/jquery@3.6.0/src/event/focusin.js
+  - https://unpkg.com/jquery@3.6.0/src/event/support.js
+  - https://unpkg.com/jquery@3.6.0/src/event/trigger.js
+  - https://unpkg.com/jquery@3.6.0/src/jquery.js
+  - https://unpkg.com/jquery@3.6.0/src/ajax/jsonp.js
+  - https://unpkg.com/jquery@3.6.0/src/ajax/load.js
+  - https://unpkg.com/jquery@3.6.0/src/ajax/var/location.js
+  - https://unpkg.com/jquery@3.6.0/src/ajax/var/nonce.js
+  - https://unpkg.com/jquery@3.6.0/src/ajax/var/rquery.js
+  - https://unpkg.com/jquery@3.6.0/src/ajax/script.js
+  - https://unpkg.com/jquery@3.6.0/src/ajax/xhr.js
+  - https://unpkg.com/jquery@3.6.0/src/manipulation.js
+  - https://unpkg.com/jquery@3.6.0/src/offset.js
+  - https://unpkg.com/jquery@3.6.0/src/queue.js
+  - https://unpkg.com/jquery@3.6.0/src/selector-native.js
+  - https://unpkg.com/jquery@3.6.0/src/selector-sizzle.js
+  - https://unpkg.com/jquery@3.6.0/src/selector.js
+  - https://unpkg.com/jquery@3.6.0/src/serialize.js
+  - https://unpkg.com/jquery@3.6.0/src/traversing.js
   - https://unpkg.com/jquery@3.6.0/src/wrap.js
+  - https://unpkg.com/jquery@3.6.0/dist/jquery.js
+  - https://unpkg.com/jquery@3.6.0/dist/jquery.min.js
+  - https://unpkg.com/jquery@3.6.0/dist/jquery.slim.js
+  - https://unpkg.com/jquery@3.6.0/dist/jquery.slim.min.js
+  - https://unpkg.com/jquery@3.6.0/dist/jquery.min.map
+  - https://unpkg.com/jquery@3.6.0/dist/jquery.slim.min.map
+  - https://unpkg.com/jquery@3.6.0/external/sizzle/dist/sizzle.js
+  - https://unpkg.com/jquery@3.6.0/external/sizzle/dist/sizzle.min.js
+  - https://unpkg.com/jquery@3.6.0/external/sizzle/dist/sizzle.min.map
+  - https://unpkg.com/jquery@3.6.0/external/sizzle/LICENSE.txt
+  - https://unpkg.com/jquery@3.6.0/bower.json
+  - https://unpkg.com/jquery@3.6.0/package.json
+  - https://unpkg.com/jquery@3.6.0/README.md
+  - https://unpkg.com/jquery@3.6.0/AUTHORS.txt
+  - https://unpkg.com/jquery@3.6.0/LICENSE.txt
 END
       actual = CDNGet::Main.new().run("unpkg", "jquery", "3.6.0")
       ok {actual} == expected
@@ -678,13 +677,13 @@ END
         ok {"#{tmpdir}/chibijs@3.0.9/README.md"        }.file_exist?
         ok {"#{tmpdir}/chibijs@3.0.9/tests/runner.html"}.file_exist?
         ok {sout} == <<END
-#{tmpdir}/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
-#{tmpdir}/chibijs@3.0.9/.npmignore ... Done (46 byte)
-#{tmpdir}/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
-#{tmpdir}/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
-#{tmpdir}/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
 #{tmpdir}/chibijs@3.0.9/package.json ... Done (756 byte)
+#{tmpdir}/chibijs@3.0.9/.npmignore ... Done (46 byte)
 #{tmpdir}/chibijs@3.0.9/README.md ... Done (21,283 byte)
+#{tmpdir}/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
+#{tmpdir}/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
+#{tmpdir}/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
+#{tmpdir}/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
 #{tmpdir}/chibijs@3.0.9/tests/runner.html ... Done (14,302 byte)
 END
       end
@@ -792,24 +791,24 @@ END
         ok {"#{tmpdir}/react@17.0.2/umd/react.production.min.js"}.file_exist?
         ok {"#{tmpdir}/react@17.0.2/umd/react.profiling.min.js" }.file_exist?
         expected = <<END
-#{tmpdir}/react@17.0.2/build-info.json ... Done (167 byte)
-#{tmpdir}/react@17.0.2/cjs/react.development.js ... Done (72,141 byte)
-#{tmpdir}/react@17.0.2/cjs/react.production.min.js ... Done (6,450 byte)
+#{tmpdir}/react@17.0.2/LICENSE ... Done (1,086 byte)
+#{tmpdir}/react@17.0.2/index.js ... Done (190 byte)
+#{tmpdir}/react@17.0.2/jsx-dev-runtime.js ... Done (222 byte)
+#{tmpdir}/react@17.0.2/jsx-runtime.js ... Done (214 byte)
 #{tmpdir}/react@17.0.2/cjs/react-jsx-dev-runtime.development.js ... Done (37,753 byte)
 #{tmpdir}/react@17.0.2/cjs/react-jsx-dev-runtime.production.min.js ... Done (456 byte)
 #{tmpdir}/react@17.0.2/cjs/react-jsx-dev-runtime.profiling.min.js ... Done (455 byte)
 #{tmpdir}/react@17.0.2/cjs/react-jsx-runtime.development.js ... Done (38,352 byte)
 #{tmpdir}/react@17.0.2/cjs/react-jsx-runtime.production.min.js ... Done (962 byte)
 #{tmpdir}/react@17.0.2/cjs/react-jsx-runtime.profiling.min.js ... Done (961 byte)
-#{tmpdir}/react@17.0.2/index.js ... Done (190 byte)
-#{tmpdir}/react@17.0.2/jsx-dev-runtime.js ... Done (222 byte)
-#{tmpdir}/react@17.0.2/jsx-runtime.js ... Done (214 byte)
-#{tmpdir}/react@17.0.2/LICENSE ... Done (1,086 byte)
-#{tmpdir}/react@17.0.2/package.json ... Done (777 byte)
-#{tmpdir}/react@17.0.2/README.md ... Done (737 byte)
+#{tmpdir}/react@17.0.2/cjs/react.development.js ... Done (72,141 byte)
+#{tmpdir}/react@17.0.2/cjs/react.production.min.js ... Done (6,450 byte)
 #{tmpdir}/react@17.0.2/umd/react.development.js ... Done (105,096 byte)
 #{tmpdir}/react@17.0.2/umd/react.production.min.js ... Done (11,440 byte)
 #{tmpdir}/react@17.0.2/umd/react.profiling.min.js ... Done (13,668 byte)
+#{tmpdir}/react@17.0.2/build-info.json ... Done (167 byte)
+#{tmpdir}/react@17.0.2/package.json ... Done (777 byte)
+#{tmpdir}/react@17.0.2/README.md ... Done (737 byte)
 END
         ok {sout} == expected
       end
@@ -853,13 +852,13 @@ END
     spec "(unpkg) doesn't override existing files when they are identical to downloaded files." do
       tmpdir = @tmpdir
       expected = <<END
-#{tmpdir}/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
-#{tmpdir}/chibijs@3.0.9/.npmignore ... Done (46 byte)
-#{tmpdir}/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
-#{tmpdir}/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
-#{tmpdir}/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
 #{tmpdir}/chibijs@3.0.9/package.json ... Done (756 byte)
+#{tmpdir}/chibijs@3.0.9/.npmignore ... Done (46 byte)
 #{tmpdir}/chibijs@3.0.9/README.md ... Done (21,283 byte)
+#{tmpdir}/chibijs@3.0.9/chibi-min.js ... Done (7,321 byte)
+#{tmpdir}/chibijs@3.0.9/chibi.js ... Done (18,429 byte)
+#{tmpdir}/chibijs@3.0.9/gulpfile.js ... Done (1,395 byte)
+#{tmpdir}/chibijs@3.0.9/.jshintrc ... Done (5,323 byte)
 #{tmpdir}/chibijs@3.0.9/tests/runner.html ... Done (14,302 byte)
 END
       _do_download_test3("unpkg", "chibijs", "3.0.9", expected)
@@ -930,16 +929,15 @@ tags:     SWFObject, swf, object, flash, embed, content
 site:     https://github.com/unshiftio/swfobject
 info:     https://unpkg.com/browse/swfobject@2.2.1/
 npmpkg:   https://registry.npmjs.org/swfobject/-/swfobject-2.2.1.tgz
-default:  /index.min.js
 license:  MIT
 urls:
+  - https://unpkg.com/swfobject@2.2.1/package.json
   - https://unpkg.com/swfobject@2.2.1/.npmignore
+  - https://unpkg.com/swfobject@2.2.1/README.md
+  - https://unpkg.com/swfobject@2.2.1/index.js
+  - https://unpkg.com/swfobject@2.2.1/patch.js
   - https://unpkg.com/swfobject@2.2.1/download.sh
   - https://unpkg.com/swfobject@2.2.1/expressInstall.swf
-  - https://unpkg.com/swfobject@2.2.1/index.js
-  - https://unpkg.com/swfobject@2.2.1/package.json
-  - https://unpkg.com/swfobject@2.2.1/patch.js
-  - https://unpkg.com/swfobject@2.2.1/README.md
 END
     end
 
@@ -996,13 +994,13 @@ END
         CDNGet::Main.new("cdnget").run("unpkg", "swfobject", "latest", @tmpdir)
       end
       ok {sout} == <<"END"
+#{@tmpdir}/swfobject@2.2.1/package.json ... Done (524 byte)
 #{@tmpdir}/swfobject@2.2.1/.npmignore ... Done (13 byte)
+#{@tmpdir}/swfobject@2.2.1/README.md ... Done (764 byte)
+#{@tmpdir}/swfobject@2.2.1/index.js ... Done (10,331 byte)
+#{@tmpdir}/swfobject@2.2.1/patch.js ... Done (277 byte)
 #{@tmpdir}/swfobject@2.2.1/download.sh ... Done (517 byte)
 #{@tmpdir}/swfobject@2.2.1/expressInstall.swf ... Done (727 byte)
-#{@tmpdir}/swfobject@2.2.1/index.js ... Done (10,331 byte)
-#{@tmpdir}/swfobject@2.2.1/package.json ... Done (524 byte)
-#{@tmpdir}/swfobject@2.2.1/patch.js ... Done (277 byte)
-#{@tmpdir}/swfobject@2.2.1/README.md ... Done (764 byte)
 END
     end
 
