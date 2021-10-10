@@ -500,6 +500,22 @@ module CDNGet
       return dict
     end
 
+    def latest_version(library)
+      version = nil
+      url = File.join(SITE_URL, "/browse/#{library}/")
+      uri = URI.parse(url)
+      HttpConnection.open(URI.parse(SITE_URL)) do |http|
+        resp = http.request('HEAD', "/browse/#{library}/")
+        if resp.code == "302"    # 302 Found
+          location = resp.header['Location']
+          location =~ /@([^@\/]+)\/\z/
+          version = $1
+        end
+      end
+      version ||= super(library)
+      return version
+    end
+
   end
 
 
