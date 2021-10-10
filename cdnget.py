@@ -721,13 +721,13 @@ Options:
         --debug       : (debug mode)
 
 Example:
-    $ {script}                                # list public CDN names
-    $ {script} [-q] cdnjs                     # list libraries
-    $ {script} [-q] cdnjs 'jquery*'           # search libraries
-    $ {script} [-q] cdnjs jquery              # list versions
-    $ {script} [-q] cdnjs jquery latest       # show latest version
-    $ {script} [-q] cdnjs jquery 2.2.4        # list files
-    $ mkdir -p static/lib                     # create a directory
+    $ {script}                             # list public CDN names
+    $ {script} [-q] cdnjs                  # list libraries (except jsdelivr/unpkg)
+    $ {script} [-q] cdnjs 'jquery*'        # search libraries
+    $ {script} [-q] cdnjs jquery           # list versions
+    $ {script} [-q] cdnjs jquery latest    # show latest version
+    $ {script} [-q] cdnjs jquery 2.2.4     # list files
+    $ mkdir -p static/lib                  # create a directory
     $ {script} [-q] cdnjs jquery 2.2.4 /static/lib  # download files
     static/lib/jquery/2.2.4/jquery.js ... Done (257,551 byte)
     static/lib/jquery/2.2.4/jquery.min.js ... Done (85,578 byte)
