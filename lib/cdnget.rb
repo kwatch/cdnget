@@ -186,6 +186,11 @@ module CDNGet
       nil
     end
 
+    def latest_version(library)
+      d = self.find(library)
+      return d[:versions].first
+    end
+
     protected
 
     def http_get(url)
@@ -768,7 +773,7 @@ END
 
     def do_get_library(cdn_code, library, version)
       cdn = find_cdn(cdn_code)
-      version = _latest_version(cdn, library) if version == 'latest'
+      version = cdn.latest_version(library) if version == 'latest'
       d = cdn.get(library, version)
       s = ""
       if @quiet
@@ -796,16 +801,9 @@ END
 
     def do_download_library(cdn_code, library, version, basedir)
       cdn = find_cdn(cdn_code)
-      version = _latest_version(cdn, library) if version == 'latest'
+      version = cdn.latest_version(library) if version == 'latest'
       cdn.download(library, version, basedir, quiet: @quiet)
       return nil
-    end
-
-    private
-
-    def _latest_version(cdn, library)
-      d = cdn.find(library)
-      return d[:versions].first
     end
 
   end
