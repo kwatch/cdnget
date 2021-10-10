@@ -774,53 +774,53 @@ END
     def do_find_library(cdn_code, library)
       cdn = find_cdn(cdn_code)
       d = cdn.find(library)
-      s = []
+      buf = []
       if @quiet
         d[:versions].each do |ver|
-          s << "#{ver}\n"
+          buf << "#{ver}\n"
         end if d[:versions]
       else
-        s << "name:     #{d[:name]}\n"
-        s << "desc:     #{d[:desc]}\n"    if d[:desc]
-        s << "tags:     #{d[:tags]}\n"    if d[:tags]
-        s << "site:     #{d[:site]}\n"    if d[:site]
-        s << "info:     #{d[:info]}\n"    if d[:info]
-        s << "license:  #{d[:license]}\n" if d[:license]
-        s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
-        s << "versions:\n"
+        buf << "name:     #{d[:name]}\n"
+        buf << "desc:     #{d[:desc]}\n"    if d[:desc]
+        buf << "tags:     #{d[:tags]}\n"    if d[:tags]
+        buf << "site:     #{d[:site]}\n"    if d[:site]
+        buf << "info:     #{d[:info]}\n"    if d[:info]
+        buf << "license:  #{d[:license]}\n" if d[:license]
+        buf << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
+        buf << "versions:\n"
         d[:versions].each do |ver|
-          s << "  - #{ver}\n"
+          buf << "  - #{ver}\n"
         end if d[:versions]
       end
-      return s.join()
+      return buf.join()
     end
 
     def do_get_library(cdn_code, library, version)
       cdn = find_cdn(cdn_code)
       version = cdn.latest_version(library) if version == 'latest'
       d = cdn.get(library, version)
-      s = []
+      buf = []
       if @quiet
         d[:urls].each do |url|
-          s << "#{url}\n"
+          buf << "#{url}\n"
         end if d[:urls]
       else
-        s << "name:     #{d[:name]}\n"
-        s << "version:  #{d[:version]}\n"
-        s << "desc:     #{d[:desc]}\n"    if d[:desc]
-        s << "tags:     #{d[:tags]}\n"    if d[:tags]
-        s << "site:     #{d[:site]}\n"    if d[:site]
-        s << "info:     #{d[:info]}\n"    if d[:info]
-        s << "npmpkg:   #{d[:npmpkg]}\n"  if d[:npmpkg]
-        s << "default:  #{d[:default]}\n" if d[:default]
-        s << "license:  #{d[:license]}\n" if d[:license]
-        s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
-        s << "urls:\n"  if d[:urls]
+        buf << "name:     #{d[:name]}\n"
+        buf << "version:  #{d[:version]}\n"
+        buf << "desc:     #{d[:desc]}\n"    if d[:desc]
+        buf << "tags:     #{d[:tags]}\n"    if d[:tags]
+        buf << "site:     #{d[:site]}\n"    if d[:site]
+        buf << "info:     #{d[:info]}\n"    if d[:info]
+        buf << "npmpkg:   #{d[:npmpkg]}\n"  if d[:npmpkg]
+        buf << "default:  #{d[:default]}\n" if d[:default]
+        buf << "license:  #{d[:license]}\n" if d[:license]
+        buf << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
+        buf << "urls:\n"  if d[:urls]
         d[:urls].each do |url|
-          s << "  - #{url}\n"
+          buf << "  - #{url}\n"
         end if d[:urls]
       end
-      return s.join()
+      return buf.join()
     end
 
     def do_download_library(cdn_code, library, version, basedir)
