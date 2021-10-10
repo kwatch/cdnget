@@ -499,9 +499,9 @@ module CDNGet
       begin
         json = fetch(url, library)
       rescue CommandError
-        raise CommandError.new("#{library}@#{version}: Library or version not found.")
+        raise CommandError.new("#{library}@#{version}: Version not found.")
       end
-      jdata   = JSON.load(json)
+      jdata = JSON.load(json)
       _debug_print(jdata)
       pr = proc do |jdata, files|
         jdata['files'].each do |d|

@@ -600,7 +600,7 @@ END
 
     spec "(unpkg) raises error when version is wrong." do
       pr = proc { CDNGet::Main.new().run("unpkg", "jquery", "1.0.0") }
-      ok {pr}.raise?(CDNGet::CommandError, "jquery@1.0.0: Library or version not found.")
+      ok {pr}.raise?(CDNGet::CommandError, "jquery@1.0.0: Version not found.")
     end
 
     spec "(google) raises error when version is wrong." do
