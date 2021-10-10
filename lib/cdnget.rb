@@ -66,7 +66,7 @@ module CDNGet
       return _get_resp_body(resp)
     end
 
-    def request(meth, path, query=None, payload: nil, headers: nil)
+    def request(meth, path, query=nil, payload: nil, headers: nil)
       path += "?" + query if query
       if @headers
         headers ||= {}
