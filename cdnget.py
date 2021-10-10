@@ -304,6 +304,7 @@ class Base(object):
                 raise ValueError("%r: unexpected version number." % version)
 
     def latest_version(self, library):
+        self.validate(library, None)
         d = self.find(library)
         return None if d is None else d['versions'][0]
 
@@ -467,6 +468,12 @@ class JSDelivr(Base):
             "destdir": "%s@%s" % (library, version),
         })
         return dct
+
+    def latest_version(self, library):
+        self.validate(library, None)
+        jstr = self.fetch("%s/package/npm/%s" % (self.API_URL, library))
+        jdict = json.loads(jstr)
+        return jdict["tags"]["latest"]
 
 
 class Unpkg(Base):
