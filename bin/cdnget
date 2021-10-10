@@ -1,21 +1,24 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
+# frozen_string_literal: true
 
 ##
-## Download files from CDN (CDNJS, jsDelivr, UNPKG, Google).
+## Download JS/CSS files from public CDN.
 ##
-## - CDNJS    (https://cdnjs.com/)
-## - jsDelivr (https://www.jsdelivr.com/)
-## - UNPKG    (https://unpkg.com/)
-## - Google   (https://developers.google.com/speed/libraries/)
+## * CDNJS    (https://cdnjs.com/)
+## * jsDelivr (https://www.jsdelivr.com/)
+## * UNPKG    (https://unpkg.com/)
+## * Google   (https://developers.google.com/speed/libraries/)
 ##
 ## Example:
 ##  $ cdnget                                # list public CDN
-##  $ cdnget [-q] cdnjs                     # list libraries
+##  $ cdnget [-q] cdnjs                     # list libraries (except jsdelivr/unpkg)
+##  $ cdnget [-q] cdnjs '*jquery*'          # search libraries
 ##  $ cdnget [-q] cdnjs jquery              # list versions
 ##  $ cdnget [-q] cdnjs jquery latest       # detect latest version
 ##  $ cdnget [-q] cdnjs jquery 3.6.0        # list files
-##  $ cdnget [-q] cdnjs jquery 3.6.0 /tmp   # download files
+##  $ mkdir -p static/lib                   # create a directory
+##  $ cdnget [-q] cdnjs jquery 3.6.0 static/lib  # download files
 ##
 
 require 'open-uri'
@@ -57,23 +60,31 @@ module CDNGet
     end
 
     def get(uri)
-      resp = @http.send_request('GET', uri.path, nil, @headers)
-      case resp
-      when Net::HTTPSuccess
-        return resp.body
-      #when HTTPInformation, Net::HTTPRedirection, HTTPClientError, HTTPServerError
-      else
-        raise HttpError.new(resp.code.to_i, resp.message)
-      end
+      resp = request('GET', uri.path, uri.query)
+      return _get_resp_body(resp)
     end
 
     def post(uri, payload)
-      path = uri.path
-      path += "?"+uri.query if uri.query && !uri.query.empty?
-      resp = @http.send_request('POST', path, payload, @headers)
+      resp = request('POST', uri.path, uri.query, payload: payload)
+      return _get_resp_body(resp)
+    end
+
+    def request(meth, path, query=nil, payload: nil, headers: nil)
+      path += "?" + query if query
+      if @headers
+        headers ||= {}
+        headers.update(@headers)
+      end
+      resp = @http.send_request(meth, path, payload, headers)
+      return resp
+    end
+
+    def _get_resp_body(resp)
       case resp
-      when Net::HTTPSuccess ; return resp.body
-      else                  ; raise HttpError.new(resp.code.to_i, resp.message)
+      when Net::HTTPSuccess
+        return resp.body
+      else
+        raise HttpError.new(resp.code.to_i, resp.message)
       end
     end
 
@@ -178,6 +189,12 @@ module CDNGet
       nil
     end
 
+    def latest_version(library)
+      validate(library, nil)
+      d = self.find(library)
+      return d[:versions].first
+    end
+
     protected
 
     def http_get(url)
@@ -203,15 +220,25 @@ module CDNGet
       end
     end
 
+    LIBRARY_REXP = /\A[-.\w]+\z/
+    VERSION_REXP = /\A\d+(\.\d+)+([-.\w]+)?/
+
     def validate(library, version)
       if library
-        library =~ /\A[-.\w]+\z/  or
-          raise ArgumentError.new("#{library.inspect}: Unexpected library name.")
+        rexp = self.class.const_get(:LIBRARY_REXP)
+        library =~ self.class.const_get(:LIBRARY_REXP)  or
+          raise CommandError.new("#{library}: Invalid library name.")
       end
       if version
-        version =~ /\A\d+(\.\d+)+([-.\w]+)?/  or
-          raise ArgumentError.new("#{version.inspect}: Unexpected version number.")
+        version =~ self.class.const_get(:VERSION_REXP)  or
+          raise CommandError.new("#{version}: Invalid version number.")
       end
+    end
+
+    def npmpkg_url(library, version)
+      pkg  = library.sub(/^@[-\w]+/, '')
+      path = "/#{library.gsub('/', '%2f')}/-/#{pkg}-#{version}.tgz"
+      return "https://registry.npmjs.org#{path}"
     end
 
     def format_integer(value)
@@ -220,7 +247,7 @@ module CDNGet
 
     def _debug_print(x)
       if @debug_mode
-        $stderr.puts "\e[0;35m*** #{PP.pp(x,'')}\e[0m"
+        $stderr.puts "\e[0;35m*** #{PP.pp(x,String.new)}\e[0m"
       end
     end
 
@@ -229,7 +256,9 @@ module CDNGet
 
   class CDNJS < Base
     CODE = "cdnjs"
-    SITE_URL = 'https://cdnjs.com/'
+    SITE_URL = "https://cdnjs.com/"
+    API_URL  = "https://api.cdnjs.com/libraries"
+    CDN_URL  = "https://cdnjs.cloudflare.com/ajax/libs"
 
     def fetch(url, library=nil)
       json_str = super
@@ -248,7 +277,7 @@ module CDNGet
     protected :fetch
 
     def list()
-      jstr = fetch("https://api.cdnjs.com/libraries?fields=name,description")
+      jstr = fetch("#{API_URL}?fields=name,description")
       jdata = JSON.parse(jstr)
       _debug_print(jdata)
       libs = jdata['results'].collect {|d| {name: d['name'], desc: d['description']} }
@@ -257,7 +286,7 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
+      jstr = fetch("#{API_URL}/#{library}", library)
       jdata = JSON.parse(jstr)
       _debug_print(jdata)
       versions = jdata['assets'].collect {|d| d['version'] }\
@@ -275,12 +304,12 @@ module CDNGet
 
     def get(library, version)
       validate(library, version)
-      jstr = fetch("https://api.cdnjs.com/libraries/#{library}", library)
+      jstr = fetch("#{API_URL}/#{library}", library)
       jdata = JSON.parse(jstr)
       _debug_print(jdata)
       d = jdata['assets'].find {|d| d['version'] == version }  or
         raise CommandError.new("#{library}/#{version}: Library or version not found.")
-      baseurl = "https://cdnjs.cloudflare.com/ajax/libs/#{library}/#{version}/"
+      baseurl = "#{CDN_URL}/#{library}/#{version}/"
       return {
         name:     library,
         version:  version,
@@ -303,10 +332,12 @@ module CDNGet
     SITE_URL = "https://www.jsdelivr.com/"
     #API_URL  = "https://api.jsdelivr.com/v1/jsdelivr/libraries"
     API_URL  = "https://data.jsdelivr.com/v1"
+    CDN_URL  = "https://cdn.jsdelivr.net/npm"
     HEADERS = {
       "x-algo""lia-app""lication-id"=>"OFCNC""OG2CU",
       "x-algo""lia-api""-key"=>"f54e21fa3a2""a0160595bb05""8179bfb1e",
     }
+    LIBRARY_REXP = /\A([-.\w]+|\@[-\w]+\/[-.\w]+)\z/
 
     def list()
       return nil    # nil means that this CDN can't list libraries without pattern
@@ -335,7 +366,7 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      url = "https://ofcncog2cu-dsn.algolia.net/1/indexes/npm-search/#{library}"
+      url = "https://ofcncog2cu-dsn.algolia.net/1/indexes/npm-search/#{library.sub('/', '%2f')}"
       uri = URI.parse(url)
       begin
         json = HttpConnection.open(uri, HEADERS) {|http| http.get(uri) }
@@ -372,7 +403,7 @@ module CDNGet
       end
       jdata   = JSON.load(json)
       files   = jdata["files"].collect {|d| d["name"] }
-      baseurl = "https://cdn.jsdelivr.net/npm/#{library}@#{version}"
+      baseurl = "#{CDN_URL}/#{library}@#{version}"
       _debug_print(jdata)
       #
       dict = find(library)
@@ -380,7 +411,7 @@ module CDNGet
       dict.update({
         version: version,
         info:    File.join(SITE_URL, "/package/npm/#{library}?version=#{version}"),
-        npmpkg:  "https://registry.npmjs.org/#{library}/-/#{library}-#{version}.tgz",
+        npmpkg:  npmpkg_url(library, version),
         urls:    files.collect {|x| baseurl + x },
         files:   files,
         baseurl: baseurl,
@@ -388,6 +419,13 @@ module CDNGet
         destdir: "#{library}@#{version}",
       })
       return dict
+    end
+
+    def latest_version(library)
+      validate(library, nil)
+      json = fetch("#{API_URL}/package/npm/#{library}")
+      jdict = JSON.load(json)
+      return jdict["tags"]["latest"]
     end
 
   end
@@ -398,6 +436,7 @@ module CDNGet
     SITE_URL = "https://unpkg.com/"
     #API_URL  = "https://www.npmjs.com"
     API_URL  = "https://api.npms.io/v2"
+    LIBRARY_REXP = /\A([-.\w]+|\@[-\w]+\/[-.\w]+)\z/
 
     protected
 
@@ -428,7 +467,7 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      json = fetch("#{API_URL}/package/#{library}", library)
+      json = fetch("#{API_URL}/package/#{library.sub('/', '%2f')}", library)
       jdata = JSON.load(json)
       _debug_print(jdata)
       dict = jdata["collected"]["metadata"]
@@ -458,30 +497,55 @@ module CDNGet
       dict = find(library)
       dict.delete(:versions)
       #
-      url = "https://data.jsdelivr.com/v1/package/npm/#{library}@#{version}/flat"
+      url = "#{SITE_URL}#{library}@#{version}/?meta"
       begin
         json = fetch(url, library)
       rescue CommandError
-        raise CommandError.new("#{library}@#{version}: Library or version not found.")
+        raise CommandError.new("#{library}@#{version}: Version not found.")
       end
-      jdata   = JSON.load(json)
-      files   = jdata["files"].collect {|d| d["name"] }
-      baseurl = File.join(SITE_URL, "/#{library}@#{version}")
+      jdata = JSON.load(json)
       _debug_print(jdata)
+      pr = proc do |jdata, files|
+        jdata['files'].each do |d|
+          d['type'] == "directory" ? pr.call(d, files) \
+                                   : (files << d['path'])
+        end if jdata['files']
+        files
+      end
+      files = pr.call(jdata, [])
+      #files = files.sort_by {|s| s.downcase }
+      baseurl = File.join(SITE_URL, "/#{library}@#{version}")
       #
       dict.update({
         name:     library,
         version:  version,
         info:     File.join(SITE_URL, "/browse/#{library}@#{version}/"),
-        npmpkg:  "https://registry.npmjs.org/#{library}/-/#{library}-#{version}.tgz",
+        npmpkg:   npmpkg_url(library, version),
         urls:     files.collect {|x| baseurl+x },
         files:    files,
         baseurl:  baseurl,
-        default:  jdata["default"],
+        #default:  jdata["default"],
         destdir:  "#{library}@#{version}",
         skipfile: /\.DS_Store\z/,  # downloading '.DS_Store' from UNPKG results in 403
       })
       return dict
+    end
+
+    def latest_version(library)
+      validate(library, nil)
+      version = nil
+      url = File.join(SITE_URL, "/browse/#{library}/")
+      uri = URI.parse(url)
+      HttpConnection.open(URI.parse(SITE_URL)) do |http|
+        resp = http.request('HEAD', "/browse/#{library}/")
+        if resp.code == "302"    # 302 Found
+          location = resp.header['Location']
+          location =~ /@([^@\/]+)\/\z/
+          version = $1
+        end
+      end
+      version ||= super(library)
+      return version
     end
 
   end
@@ -489,12 +553,13 @@ module CDNGet
 
   class GoogleCDN < Base
     CODE = "google"
-    SITE_URL = 'https://developers.google.com/speed/libraries/'
+    SITE_URL = "https://developers.google.com/speed/libraries/"
+    CDN_URL  = "https://ajax\.googleapis\.com/ajax/libs"
 
     def list()
-      html = fetch("https://developers.google.com/speed/libraries/")
+      html = fetch(SITE_URL)
       _debug_print(html)
-      rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/([^/]+)/([^/]+)/([^"]+)"`
+      rexp = %r`"#{Regexp.escape(CDN_URL)}/([^/]+)/([^/]+)/([^"]+)"`
       libs = []
       html.scan(rexp) do |lib, ver, file|
         libs << {name: lib, desc: "latest version: #{ver}" }
@@ -504,9 +569,9 @@ module CDNGet
 
     def find(library)
       validate(library, nil)
-      html = fetch("https://developers.google.com/speed/libraries/")
+      html = fetch(SITE_URL)
       _debug_print(html)
-      rexp = %r`"https://ajax\.googleapis\.com/ajax/libs/#{library}/`
+      rexp = %r`"#{Regexp.escape(CDN_URL)}/#{library}/`
       site_url = nil
       versions = []
       urls = []
@@ -546,14 +611,14 @@ module CDNGet
     def get(library, version)
       validate(library, version)
       d = find(library)
-      d[:versions].find(version)  or
-        raise CommandError.new("#{version}: No such version of #{library}.")
+      d[:versions].find {|s| s == version }  or
+        raise CommandError.new("#{library} #{version}: Version not found.")
       urls = d[:urls]
       if urls
         rexp = /(\/libs\/#{library})\/[^\/]+/
         urls = urls.collect {|x| x.gsub(rexp, "\\1/#{version}") }
       end
-      baseurl = "https://ajax.googleapis.com/ajax/libs/#{library}/#{version}"
+      baseurl = "#{CDN_URL}/#{library}/#{version}"
       files = urls ? urls.collect {|x| x[baseurl.length..-1] } : nil
       return {
         name:    d[:name],
@@ -605,13 +670,13 @@ Options:
       --debug       : (debug mode)
 
 Example:
-  $ #{script}                                # list public CDN names
-  $ #{script} [-q] cdnjs                     # list libraries
-  $ #{script} [-q] cdnjs 'jquery*'           # search libraries
-  $ #{script} [-q] cdnjs jquery              # list versions
-  $ #{script} [-q] cdnjs jquery latest       # show latest version
-  $ #{script} [-q] cdnjs jquery 2.2.0        # list files
-  $ mkdir -p static/lib                      # create a directory
+  $ #{script}                              # list public CDN names
+  $ #{script} [-q] cdnjs                   # list libraries (except jsdelivr/unpkg)
+  $ #{script} [-q] cdnjs 'jquery*'         # search libraries
+  $ #{script} [-q] cdnjs jquery            # list versions
+  $ #{script} [-q] cdnjs jquery latest     # show latest version
+  $ #{script} [-q] cdnjs jquery 2.2.0      # list files
+  $ mkdir -p static/lib                    # create a directory
   $ #{script} [-q] cdnjs jquery 2.2.0 static/lib  # download files
   static/lib/jquery/2.2.0/jquery.js ... Done (258,388 byte)
   static/lib/jquery/2.2.0/jquery.min.js ... Done (85,589 byte)
@@ -638,9 +703,6 @@ END
       return RELEASE + "\n" if cmdopts['v'] || cmdopts['version']
       @quiet = cmdopts['quiet'] || cmdopts['q']
       @debug_mode = cmdopts['debug']
-      #
-      validate(args[1], args[2])
-      #
       case args.length
       when 0
         return do_list_cdns()
@@ -661,17 +723,6 @@ END
         return ""
       else
         raise CommandError.new("'#{args[4]}': Too many arguments.")
-      end
-    end
-
-    def validate(library, version)
-      if library && ! library.include?('*')
-        library =~ /\A[-.\w]+\z/  or
-          raise CommandError.new("#{library}: Unexpected library name.")
-      end
-      if version
-        version =~ /\A[-.\w]+\z/  or
-          raise CommandError.new("#{version}: Unexpected version number.")
       end
     end
 
@@ -733,67 +784,66 @@ END
     def do_find_library(cdn_code, library)
       cdn = find_cdn(cdn_code)
       d = cdn.find(library)
-      s = ""
+      buf = []
       if @quiet
         d[:versions].each do |ver|
-          s << "#{ver}\n"
-        end if d[:versions]
+          buf << "#{ver}\n"
+        end unless empty?(d[:versions])
       else
-        s << "name:     #{d[:name]}\n"
-        s << "desc:     #{d[:desc]}\n"    if d[:desc]
-        s << "tags:     #{d[:tags]}\n"    if d[:tags]
-        s << "site:     #{d[:site]}\n"    if d[:site]
-        s << "info:     #{d[:info]}\n"    if d[:info]
-        s << "license:  #{d[:license]}\n" if d[:license]
-        s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
-        s << "versions:\n"
+        buf << "name:     #{d[:name]}\n"
+        buf << "desc:     #{d[:desc]}\n"    unless empty?(d[:desc])
+        buf << "tags:     #{d[:tags]}\n"    unless empty?(d[:tags])
+        buf << "site:     #{d[:site]}\n"    unless empty?(d[:site])
+        buf << "info:     #{d[:info]}\n"    unless empty?(d[:info])
+        buf << "license:  #{d[:license]}\n" unless empty?(d[:license])
+        buf << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') unless empty?(d[:snippet])
+        buf << "versions:\n"
         d[:versions].each do |ver|
-          s << "  - #{ver}\n"
-        end if d[:versions]
+          buf << "  - #{ver}\n"
+        end unless empty?(d[:versions])
       end
-      return s
+      return buf.join()
     end
 
     def do_get_library(cdn_code, library, version)
       cdn = find_cdn(cdn_code)
-      version = _latest_version(cdn, library) if version == 'latest'
+      version = cdn.latest_version(library) if version == 'latest'
       d = cdn.get(library, version)
-      s = ""
+      buf = []
       if @quiet
         d[:urls].each do |url|
-          s << "#{url}\n"
+          buf << "#{url}\n"
         end if d[:urls]
       else
-        s << "name:     #{d[:name]}\n"
-        s << "version:  #{d[:version]}\n"
-        s << "desc:     #{d[:desc]}\n"    if d[:desc]
-        s << "tags:     #{d[:tags]}\n"    if d[:tags]
-        s << "site:     #{d[:site]}\n"    if d[:site]
-        s << "info:     #{d[:info]}\n"    if d[:info]
-        s << "npmpkg:   #{d[:npmpkg]}\n"  if d[:npmpkg]
-        s << "default:  #{d[:default]}\n" if d[:default]
-        s << "license:  #{d[:license]}\n" if d[:license]
-        s << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') if d[:snippet]
-        s << "urls:\n"  if d[:urls]
+        buf << "name:     #{d[:name]}\n"
+        buf << "version:  #{d[:version]}\n"
+        buf << "desc:     #{d[:desc]}\n"    unless empty?(d[:desc])
+        buf << "tags:     #{d[:tags]}\n"    unless empty?(d[:tags])
+        buf << "site:     #{d[:site]}\n"    unless empty?(d[:site])
+        buf << "info:     #{d[:info]}\n"    unless empty?(d[:info])
+        buf << "npmpkg:   #{d[:npmpkg]}\n"  unless empty?(d[:npmpkg])
+        buf << "default:  #{d[:default]}\n" unless empty?(d[:default])
+        buf << "license:  #{d[:license]}\n" unless empty?(d[:license])
+        buf << "snippet: |\n" << d[:snippet].gsub(/^/, '    ') unless empty?(d[:snippet])
+        buf << "urls:\n" unless empty?(d[:urls])
         d[:urls].each do |url|
-          s << "  - #{url}\n"
-        end if d[:urls]
+          buf << "  - #{url}\n"
+        end unless empty?(d[:urls])
       end
-      return s
+      return buf.join()
     end
 
     def do_download_library(cdn_code, library, version, basedir)
       cdn = find_cdn(cdn_code)
-      version = _latest_version(cdn, library) if version == 'latest'
+      version = cdn.latest_version(library) if version == 'latest'
       cdn.download(library, version, basedir, quiet: @quiet)
       return nil
     end
 
     private
 
-    def _latest_version(cdn, library)
-      d = cdn.find(library)
-      return d[:versions].first
+    def empty?(x)
+      return x.nil? || x.empty?
     end
 
   end
